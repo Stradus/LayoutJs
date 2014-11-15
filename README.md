@@ -11,7 +11,7 @@ It can serve as the View in your MVC or MVVM architecture or you can just use it
 LayoutJS is primarily meant for use in Single Page Applications (SPA).
 
 #####CSS
-CSS was originally developed to quickly and simply lay out document style pages. While there have been many additional over the years, like e.g. the flex box laying out great web applications is still very error prone for non CSS ninja experts. CSS is both used to position elements on the screen as well as to lay them out. LayoutJS clearly separates these two concerns. 
+CSS was originally developed to quickly and simply lay out document style pages. While there have been many additions over the years, like e.g. the flex box laying out great web applications is still very error prone for non CSS ninja experts. CSS is both used to position elements on the screen as well as to lay them out. LayoutJS clearly separates these two concerns. 
 
 #####Philosophy
 LayoutJS is meant for those who need to get work done. For those who want to quickly and effectively create great user experiences.
