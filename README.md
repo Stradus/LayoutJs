@@ -13,6 +13,8 @@ LayoutJS is primarily meant for use in Single Page Applications (SPA).
 #####CSS
 CSS was originally developed to quickly and simply lay out document style pages. While there have been many additions over the years, like e.g. the flex box laying out great web applications is still very error prone for non CSS ninja experts. CSS is both used to position elements on the screen as well as to lay them out. LayoutJS clearly separates these two concerns. 
 
+CSS mainly uses layout models where the horizontal and vertical directions are treated differently and cannot be interchanged. Easily laying out modern web applications require full control over the vertical dimension as well. 
+
 #####Philosophy
 LayoutJS is meant for those who need to get work done. For those who want to quickly and effectively create great user experiences.
 
