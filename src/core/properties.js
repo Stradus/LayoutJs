@@ -2,19 +2,16 @@
 var Layout;
 (function (Layout) {
     var recordAccess = false;
-    var accessedForRead = function (property) {
 
-    };
-    var accessedForWrite = function (property) {
-
-    };
 
     Layout.addProperty = function (element, name, options) {
         var property = {
             element: element,
             name: name,
-            value: options.default,
+            value: null, // Helps for debugging, this value shold never be observde
+            valueSet: false,
             onChange: options.onChange,
+            subscribers: new Set(),
             needsMeasure: options.needsMeasure,
             needsArrange: options.needsArrange,
             needsRender: options.needsRender
@@ -35,6 +32,10 @@ var Layout;
                 if (recordAccess) {
                     accessedForWrite(property);
                 }
+                if (property.valueSet && v === property.value) {
+                    return;
+                }
+                property.valueSet = true;
                 if (property.onChange) {
                     property.value = property.onChange(v);
                 } else {
@@ -49,11 +50,64 @@ var Layout;
                 if (property.needsRender) {
                     property.element.needsRender = true;
                 }
-                
+                property.subscribers.forEach(function (p) {
+                    p.updateValue();
+                });
             }
         };
         Object.defineProperty(element, name, o);
+        o.set(options.default);
     };
 
+    var targetProperty;
+    var subscribers = new Set();
+    var accessedForRead = function (property) {
+        if (property === targetProperty) {
+            //Nothing to do, we dont subscribe to ourself!
+            return;
+        }
+        property.subscribers.add(targetProperty);
+        subscribers.add(property);
+    };
+    var writeAccessSet;
+    var accessedForWrite = function (property) {
+
+    };
+    var evaluateProperty = function (property) {
+        recordAccess = true;
+        subscribers.clear();
+        try {
+            targetProperty = property;
+            var value = property.compute();
+        }
+        finally {
+            recordAccess = false;
+        }
+        return value;
+    };
+    Layout.addTriggeredProperty = function (element, name, compute) {
+        var property = {
+            element: element,
+            name: name,
+            value: null,
+            subscribers: new Set(),
+            compute:compute,
+            updateValue: function () {
+                property.value = evaluateProperty(property);
+                property.subscribers.forEach(function (p) {
+                    p.updateValue();
+                });
+            }
+        };
+        var o = {};
+        o.get = function () {
+            if (recordAccess) {
+                accessedForRead(property);
+            }
+            return property.value;
+        };
+        Object.defineProperty(element, name, o);
+        property.updateValue();
+    };
 
 })(Layout || (Layout = {}));

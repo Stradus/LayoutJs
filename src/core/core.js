@@ -58,13 +58,13 @@ var Layout;
         if (windowEventHandlerCreated) {
             return;
         }
-        window.addEventListener('click', function (e) {
-            if (e.target.layoutElement) {
-                console.log('Created by: ' + e.target.layoutElement.type);
-            } else {
-                console.log('Unmanaged HTML element');
-            }
-        });
+        //window.addEventListener('click', function (e) {
+        //    if (e.target.layoutElement) {
+        //        console.log('Created by: ' + e.target.layoutElement.type);
+        //    } else {
+        //        console.log('Unmanaged HTML element');
+        //    }
+        //});
         var lastMouseOverElement = undefined;
         window.addEventListener('mouseover', function (e) {
             var target = e.target.layoutElement;
@@ -72,7 +72,7 @@ var Layout;
                 propagateUp(lastMouseOverElement, 'isPointerOver', false, target);
             }
 
-            if (e.target.layoutElement) {
+            if (target) {
                 propagateUp(target, 'isPointerOver', true);
                 lastMouseOverElement = target;
                 console.log('Pointer over: ' + e.target.layoutElement.type);
@@ -81,6 +81,28 @@ var Layout;
                 console.log('Unmanaged HTML element');
             }
         });
+        var lastPointerDownElement = undefined;
+        window.addEventListener('mousedown', function (e) {
+            var target = e.target.layoutElement;
+            if (lastPointerDownElement) {
+                propagateUp(target, 'isPointerDown', false);
+                lastPointerDownElement = undefined;
+            }
+            
+            if (target) {
+                propagateUp(target, 'isPointerDown', true);
+                lastPointerDownElement = target;
+            }
+        });
+
+        window.addEventListener('mouseup', function (e) {
+            var target = e.target.layoutElement;
+            if (lastPointerDownElement) {
+                propagateUp(target, 'isPointerDown', false);
+                lastPointerDownElement = undefined;
+            }
+        });
+
         windowEventHandlerCreated = true;
     };
 })(Layout || (Layout = {}));

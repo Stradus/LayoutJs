@@ -47,6 +47,9 @@ var Layout;
         self.addProperty = function (name, options) {
             Layout.addProperty(self, name, options);
         };
+        self.addTriggeredProperty = function (name, compute) {
+            Layout.addTriggeredProperty(self, name, compute);
+        }
         var cssValues = {};
         var changedCssValues = {};
         self.addCssProperty = function (name, needsMeasure, defaultValue) {
@@ -175,6 +178,7 @@ var Layout;
             needsMeasure: true
         })
         self.addProperty('isPointerOver', { get: true, set: true, 'default': false });
+        self.addProperty('isPointerDown', { get: true, set: true, 'default': false });
 
         var removeHtml = function (child) {
             if (child.html) {

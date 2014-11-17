@@ -1,32 +1,6 @@
 "use strict";
 var Layout;
-(function (Layout) {
-    Layout.button = function (inheritor) {
-        var self = Layout.contentHost(inheritor || this);
-        self.type = 'button';      
-        var state;
-        self.addProperty('state', {
-            get: true,set:true
-        });
-        //var createHtml = self.createHtml;
-        //self.createHtml = function () {
-        //    var result = createHtml();//Call base function
-        //    if (result) {
-        //        self.html.addEventListener('click', function (e) {
-        //            console.log('Hello click');
-        //        });
-        //        self.html.addEventListener('mouseenter', function(e){
-        //            console.log('Mouse entered');    
-        //        });
-        //        self.html.addEventListener('mouseleave', function(e){
-        //            console.log('Mouse left');    
-        //        });
-        //    }
-        //    return result;
-        //};
-
-        return self;
-    }
+(function (Layout) {    
 
     Layout.contentHost = function (inheritor) {
         var self = Layout.uiElement(inheritor || this, 1);
