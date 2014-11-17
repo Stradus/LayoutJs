@@ -31,7 +31,7 @@ var LayoutTest;
         //var definition = {
         //    type: 'host',
         //    children: [{
-        //        type: 'stackPanel', background: 'gray', horizontalAlignment: 'left', verticalAlignment: 'top',
+        //        type: 'stack', background: 'gray', horizontalAlignment: 'left', verticalAlignment: 'top',
         //        children: [{
         //            type: "text", text: "Button Text", userSelect: "none", margin: 5, horizontalAlignment: 'center', verticalAlignment: 'center'
         //        }]
@@ -41,7 +41,7 @@ var LayoutTest;
         //var definition = {
         //    type: 'host', children: [
         //        {
-        //            type: 'stackPanel', children: [
+        //            type: 'stack', children: [
         //               { type: 'text', text: 'Hgello', background: 'gray', horizontalAlignment: 'center', verticalAlignment: 'center' },
         //               {
         //                   type: 'button', children: [
@@ -57,13 +57,13 @@ var LayoutTest;
         //var definition =
         //    {
         //        type: 'host', children: [{
-        //            type: 'stackPanel', orientation: 'vertical', children: [
+        //            type: 'stack', orientation: 'vertical', children: [
         //            {
-        //                type: 'stackPanel', orientation: 'vertical', background:'blue', children: [
+        //                type: 'stack', orientation: 'vertical', background:'blue', children: [
         //                  { type: 'text', text: 'This is a long sentence' },
         //                  { type: 'text', text: 'This is shorter' },
         //                  {
-        //                      type: 'stackPanel', id: 'panel2', orientation: 'horizontal', children: [
+        //                      type: 'stack', id: 'panel2', orientation: 'horizontal', children: [
         //                         { type: 'text', text: 'Horizontal 1' },
         //                         { type: 'text', text: 'Horizontal 2, but longer' }
         //                      ]
@@ -77,11 +77,11 @@ var LayoutTest;
         return Layout.create(definition);
         //var definition =
         //    {
-        //        type: 'stackPanel', orientation: 'vertical', children: [
+        //        type: 'stack', orientation: 'vertical', children: [
         //           { type: 'text', textContent: 'This is a long sentence' },
         //           { type: 'text', textContent: 'This is shorter' },
         //           {
-        //               type: 'stackPanel', id: 'panel2', orientation: 'horizontal', children: [
+        //               type: 'stack', id: 'panel2', orientation: 'horizontal', children: [
         //                  { type: 'text', textContent: 'Horizontal 1' },
         //                  { type: 'text', textContent: 'Horizontal 2, but longer' }
         //               ]
@@ -94,7 +94,7 @@ var LayoutTest;
         //var layout = Layout.create(definition);
 
         ////var l = Layout;
-        ////var panel = new Layout.stackPanel();
+        ////var panel = new Layout.stack();
         ////panel.orientation = 'vertical';
         ////var text1 = new Layout.text();
         ////text1.textContent = 'This is a long sentence';
@@ -103,7 +103,7 @@ var LayoutTest;
         ////text2.textContent = 'Short Text';
         ////panel.addChild(text2);
 
-        ////var panel2 = new Layout.stackPanel();
+        ////var panel2 = new Layout.stack();
         ////panel2.orientation = 'horizontal';
         ////panel.addChild(panel2);
         ////var text3 = new Layout.text();

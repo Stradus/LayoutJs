@@ -130,6 +130,7 @@ var Layout;
                 set: setFunc
             });
         };
+
         var attrValues = {};
         //var changedAttrValues = {};
         self.addAttrProperty = function (name, needsMeasure, defaultValue) {

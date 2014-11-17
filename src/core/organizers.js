@@ -1,7 +1,7 @@
 "use strict";
 var Layout;
 (function (Layout) {
-    Layout.stackPanel = function (inheritor) {
+    Layout.stack = function (inheritor) {
         var self = Layout.uiElement(inheritor || this);
         self.type = 'stackPanel';
         self.addProperty('orientation', { get: true, set: true, 'default': 'vertical', needsMeasure: true });
