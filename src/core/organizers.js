@@ -6,6 +6,7 @@ var Layout;
         self.type = 'stackPanel';
         self.addProperty('orientation', { get: true, set: true, 'default': 'vertical', needsMeasure: true });
         self.addCssProperty('background', false, undefined);
+
         self.measureSelf = function (availableSize) {
             var childSize = { width: 0, height: 0 };
             switch (self.orientation) {

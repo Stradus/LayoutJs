@@ -6,13 +6,7 @@ var Layout;
         self.type = 'button';      
         var state;
         self.addProperty('state', {
-            get: function () {
-                return state;
-            },
-            set: function (s) {
-                state = s;
-                console.log('state: ' + s);
-            },
+            get: true,set:true
         });
         //var createHtml = self.createHtml;
         //self.createHtml = function () {

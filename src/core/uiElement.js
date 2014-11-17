@@ -45,110 +45,50 @@ var Layout;
         };
 
         self.addProperty = function (name, options) {
-            var o = {};
-            var value = options.default;
-            if (options.get) {
-                if (options.get === true) {
-                    o.get = function () {
-                        return value;
-                    }
-                } else {
-                    o.get = options.get;
-                }
-            }
-            if (options.set) {
-                if (options.set === true) {
-                    if (options.needsMeasure) {
-                        o.set = function (v) {
-                            value = v;
-                            self.needsMeasure = true;
-                        }
-                    } else if (options.needsArrange) {
-                        o.set = function (v) {
-                            value = v;
-                            self.needsArrange = true;
-                        }
-                    }
-                    else if (options.needsRender) {
-                        o.set = function (v) {
-                            value = v;
-                            self.needsRender = true;
-                        }
-                    } else {
-                        o.set = function (v) {
-                            value = v;
-                        }
-                    }
-                } else {
-                    if (options.needsMeasure) {
-                        var set = options.set;
-                        o.set = function (v) {
-                            set(v);
-                            self.needsMeasure = true;
-                        }
-                    } else if (options.needsArrange) {
-                        var set = options.set;
-                        o.set = function (v) {
-                            set(v);
-                            self.needsArrange = true;
-                        }
-                    } else if (options.needsRender) {
-                        var set = options.set;
-                        o.set = function (v) {
-                            set(v);
-                            self.needsRender = true;
-                        }
-                    } else {
-                        o.set = options.set;
-                    }
-                }
-            }
-            Object.defineProperty(self, name, o);
+            Layout.addProperty(self, name, options);
         };
         var cssValues = {};
         var changedCssValues = {};
         self.addCssProperty = function (name, needsMeasure, defaultValue) {
-            var setFunc = function (v) {
+            var changeFunc = function (v) {
                 if (v !== cssValues[name]) {
                     cssValues[name] = v;
                     changedCssValues[name] = v;
                     self.needsRender = true;
                 }
-                //if (self.html) {
-                //    self.html.style[name] = v;
-                //}
+                return v;
             };
             if (arguments.length > 2) {
-                setFunc(defaultValue);
+                changeFunc(defaultValue);
             }
 
             self.addProperty(name, {
                 needsMeasure: needsMeasure,
-                get: function () {
-                    return cssValues[name];
-                },
-                set: setFunc
+                get: true,
+                set: true,
+                onChange: changeFunc,
+                'default': defaultValue
             });
         };
 
         var attrValues = {};
         //var changedAttrValues = {};
         self.addAttrProperty = function (name, needsMeasure, defaultValue) {
-            var setFunc = function (v) {
+            var changeFunc = function (v) {
                 attrValues[name] = v;
                 if (self.html) {
                     self.html[name] = v;
                 }
+                return v;
             };
             if (arguments.length > 2) {
-                setFunc(defaultValue);
+                changeFunc(defaultValue);
             }
             self.addProperty(name, {
                 needsMeasure: needsMeasure,
-                get: function () {
-                    return attrValues[name];
-                },
-                set: setFunc
+                get: true,
+                set: true,
+                onChange: changeFunc
             });
         };
 
@@ -191,33 +131,45 @@ var Layout;
 
         self.html = undefined;
 
-
-        self.addProperty('children', { get: function () { return children; } });
-        self.addProperty('child', { get: function () { if (children.length > 1) { throw "Element has multiple children" }; return children[0]; } });
-        self.addProperty('parent', { get: function () { return parent; } });
+        Object.defineProperty(self, 'children', { get: function () { return children } });
+        //self.addProperty('children', { get:true, 'default': children});
+        //self.addProperty('child', { get: function () { if (children.length > 1) { throw "Element has multiple children" }; return children[0]; } });
+        Object.defineProperty(self, 'child', {
+            get: function () { return children.length > 0 ? children[0] : undefined },
+            set: function (child) {
+                if (self.children.length === 1 && self.children[0] === child) {
+                    // nothing to change
+                    return;
+                }
+                self.removeAllChildren();
+                self.addChild(child);
+            }
+        })
+        Object.defineProperty(self, 'parent', { get: function () { return parent; } });
 
         self.addProperty('horizontalAlignment', { get: true, set: true, 'default': 'stretch', needsArrange: true });
         self.addProperty('verticalAlignment', { get: true, set: true, 'default': 'stretch', needsArrange: true });
-        var margin = { top: 0, right: 0, bottom: 0, left: 0 };
+
         self.addProperty('margin', {
-            get: function () { return margin; }, set: function (v) {
+            get: true, set: true, 'default':{ top: 0, right: 0, bottom: 0, left: 0 },
+            onChange: function (v) {
                 if (typeof v === 'number') {
-                    margin = { top: v, right: v, bottom: v, left: v };
+                    return { top: v, right: v, bottom: v, left: v };
                 } else {
-                    margin = { top: v.top || 0, right: v.right || 0, bottom: v.bottom || 0, left: v.left || 0 };
+                    return { top: v.top || 0, right: v.right || 0, bottom: v.bottom || 0, left: v.left || 0 };
                 }
             },
             needsMeasure: true
         })
-        var padding = { top: 0, right: 0, bottom: 0, left: 0 };
         self.addProperty('padding', {
-            get: function () { return padding; }, set: function (v) {
+            get: true, set: true, 'default': { top: 0, right: 0, bottom: 0, left: 0 },
+            onChange: function (v) {
                 // Padding can never be negative
                 if (typeof v === 'number') {
                     if (v < 0) { v = 0; }
-                    padding = { top: v, right: v, bottom: v, left: v };
+                    return { top: v, right: v, bottom: v, left: v };
                 } else {
-                    padding = { top: Math.max(0, v.top || 0), right: Math.max(0, v.right || 0), bottom: Math.max(0, v.bottom || 0), left: Math.max(0, v.left || 0) };
+                    return { top: Math.max(0, v.top || 0), right: Math.max(0, v.right || 0), bottom: Math.max(0, v.bottom || 0), left: Math.max(0, v.left || 0) };
                 }
             },
             needsMeasure: true

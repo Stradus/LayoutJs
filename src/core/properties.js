@@ -17,7 +17,7 @@ var Layout;
             onChange: options.onChange,
             needsMeasure: options.needsMeasure,
             needsArrange: options.needsArrange,
-            needsRender:options.needsRender
+            needsRender: options.needsRender
         };
         var o = {};
         if (options.get) {
@@ -29,14 +29,17 @@ var Layout;
             };
         };
         if (options.set) {
-            // If there is a perf bottleneck, one could pre create separate functions for 
+            // If there is a perf bottleneck, one could pre-create separate functions for 
             // all these cases
             o.set = function (v) {
                 if (recordAccess) {
                     accessedForWrite(property);
                 }
-                var lastValue = property.value;
-                property.value = v;
+                if (property.onChange) {
+                    property.value = property.onChange(v);
+                } else {
+                    property.value = v;
+                }
                 if (property.needsMeasure) {
                     property.element.needsMeasure = true;
                 }
@@ -46,9 +49,7 @@ var Layout;
                 if (property.needsRender) {
                     property.element.needsRender = true;
                 }
-                if(property.onChange && lastValue!==v){
-                    property.onChange(v);
-                }
+                
             }
         };
         Object.defineProperty(element, name, o);
