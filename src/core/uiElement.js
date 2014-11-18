@@ -50,6 +50,10 @@ var Layout;
         self.addTriggeredProperty = function (name, compute) {
             Layout.addTriggeredProperty(self, name, compute);
         }
+        self.addTriggeredEvent = function (name, trigger) {
+            Layout.addTriggeredEvent(self, name, trigger);
+        };
+
         var cssValues = {};
         var changedCssValues = {};
         self.addCssProperty = function (name, needsMeasure, defaultValue) {
@@ -131,6 +135,8 @@ var Layout;
             configurable: true
         });
 
+        //self.addProperty('styles', { set: true, get: true });
+
 
         self.html = undefined;
 
@@ -148,6 +154,30 @@ var Layout;
                 self.addChild(child);
             }
         })
+
+        var styleChanges = {};
+        var activeStyleName = 'default';
+        self.applyStyle = function (styleName) {
+            var style = self[styleName + 'Style'];
+
+            // first revert style changes
+            for (var name in styleChanges) {
+                self[name] = styleChanges[name];
+            }
+            styleChanges = {};
+            if (styleName === 'default' || !style) {
+                return; // Nothing to set for the default style
+            }
+            for (var name in style) {
+                var oldValue = Layout.peekPropertyValue( self, name);
+                var newValue = style[name];
+                if (newValue !== oldValue) {
+                    styleChanges[name] = oldValue;
+                    self[name] = newValue;
+                }
+            }
+        };
+
         Object.defineProperty(self, 'parent', { get: function () { return parent; } });
 
         self.addProperty('horizontalAlignment', { get: true, set: true, 'default': 'stretch', needsArrange: true });

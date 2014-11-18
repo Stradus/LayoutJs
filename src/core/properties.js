@@ -5,10 +5,16 @@ var Layout;
 
 
     Layout.addProperty = function (element, name, options) {
+        if (!options) {
+            options = { get: true, set: true };
+        }
+        if(typeof options === 'function'){
+            options = { get: true, set: true, onChange:options };
+        }
         var property = {
             element: element,
             name: name,
-            value: null, // Helps for debugging, this value shold never be observde
+            value: null, // Helps for debugging, this value shold never be observed
             valueSet: false,
             onChange: options.onChange,
             subscribers: new Set(),
@@ -57,6 +63,7 @@ var Layout;
         };
         Object.defineProperty(element, name, o);
         o.set(options.default);
+        return property;
     };
 
     var targetProperty;
@@ -78,7 +85,7 @@ var Layout;
         subscribers.clear();
         try {
             targetProperty = property;
-            var value = property.compute();
+            var value = property.compute(property.value);
         }
         finally {
             recordAccess = false;
@@ -89,9 +96,9 @@ var Layout;
         var property = {
             element: element,
             name: name,
-            value: null,
+            value: undefined,
             subscribers: new Set(),
-            compute:compute,
+            compute: compute,
             updateValue: function () {
                 property.value = evaluateProperty(property);
                 property.subscribers.forEach(function (p) {
@@ -108,6 +115,78 @@ var Layout;
         };
         Object.defineProperty(element, name, o);
         property.updateValue();
+        return property;
     };
+
+    Layout.peekPropertyValue = function (element, name) {
+        var state = recordAccess;
+        recordAccess = false;
+        try {
+            var value = element[name];
+        }
+        finally {
+            recordAccess = state;
+        }
+        return value;
+    }
+
+    Layout.addTriggeredEvent = function (element, name, trigger) {
+        var property = {
+            element: element,
+            name: name,
+            value: null,
+            //subscribers: new Set(), //Triggered event properties are internal and can never have subscribers
+            compute: trigger,
+            handlers: new Set(),
+            isTriggered: false,
+            updateValue: function () {
+                property.value = evaluateProperty(property);
+                if (property.value && !property.isTriggered) {
+                    runHandlers();
+                    property.isTriggered = true;
+                    return;
+                }
+                if (!property.value) {
+                    property.isTriggered = false;
+                }
+            }
+        };
+        var runHandlers = function () {
+            if (property.handlers.size > 0) {
+                var event = {
+                    element: property.element,
+                    name: property.name
+                };
+                //Object.freeze(event);
+                property.handlers.forEach(function (h) {
+                    h(event);
+                });
+            }
+        };
+        var handlerManager = {
+            addHandler: function (handler) {
+                property.handlers.add(handler);
+            },
+            removeHandler: function (handler) {
+                property.handlers.delete(handler);
+            },
+            removeAllHandlers: function () {
+                property.handlers.clear();
+            },
+            triggerNow: function () {
+                runHandlers();
+            }
+        };
+        Object.freeze(handlerManager);
+        Object.defineProperty(element, name, {
+            get: function () { return handlerManager },
+            set: function (v) {
+                handlerManager.addHandler(v);
+            }
+        });
+        property.updateValue();
+        return property;
+    };
+
 
 })(Layout || (Layout = {}));

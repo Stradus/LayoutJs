@@ -6,9 +6,16 @@ var LayoutTest;
         var definition = {
             type: 'host',
             children: [{
-                type: 'button', background: 'gray', horizontalAlignment: 'left', verticalAlignment: 'top', margin: 5,
+                type: 'button',
+                background: 'gray',
+                horizontalAlignment: 'left',
+                verticalAlignment: 'top',
+                margin: 5,
+                click: function () { console.log('click') },
+                pointerOverStyle: { background: 'green' },
+                buttonDownStyle: {background:'red'},
                 children: [{
-                    type: "text", text: "Button Text", userSelect: "none", margin: 5, horizontalAlignment: 'center', verticalAlignment: 'center', selectable: 'false'
+                    type: "text", text: "Button Text", margin: 5, horizontalAlignment: 'center', verticalAlignment: 'center', selectable: 'false'
                 }]
             }]
         };

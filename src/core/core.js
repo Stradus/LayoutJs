@@ -75,10 +75,10 @@ var Layout;
             if (target) {
                 propagateUp(target, 'isPointerOver', true);
                 lastMouseOverElement = target;
-                console.log('Pointer over: ' + e.target.layoutElement.type);
+                //console.log('Pointer over: ' + e.target.layoutElement.type);
             } else {
                 lastMouseOverElement = undefined;
-                console.log('Unmanaged HTML element');
+                //console.log('Unmanaged HTML element');
             }
         });
         var lastPointerDownElement = undefined;
@@ -98,7 +98,7 @@ var Layout;
         window.addEventListener('mouseup', function (e) {
             var target = e.target.layoutElement;
             if (lastPointerDownElement) {
-                propagateUp(target, 'isPointerDown', false);
+                propagateUp(lastPointerDownElement, 'isPointerDown', false);
                 lastPointerDownElement = undefined;
             }
         });
