@@ -17,6 +17,7 @@ var LayoutTest;
                     click: function () { console.log('click') },
                     pointerOverStyle: { background: 'green' },
                     buttonDownStyle: { background: 'red' },
+                    disabledStyle: {background:'lightgray'},
                     children: [{
                         type: "text", text: "Button Text", margin: 5, horizontalAlignment: 'center', verticalAlignment: 'center', selectable: 'false'
                     },
@@ -27,9 +28,11 @@ var LayoutTest;
                     horizontalAlignment: 'left',
                     verticalAlignment: 'top',
                     margin: 5,
+                    isDisabled: true,
                     click: function () { console.log('click') },
                     pointerOverStyle: { background: 'green' },
                     buttonDownStyle: { background: 'red' },
+                    disabledStyle: { background: 'lightgray' },
                     children: [{
                         type: "text", text: "Second Button", margin: 10, horizontalAlignment: 'center', verticalAlignment: 'center', selectable: 'false'
                     },
@@ -43,6 +46,7 @@ var LayoutTest;
                     click: function () { console.log('click') },
                     pointerOverStyle: { background: 'green' },
                     buttonDownStyle: { background: 'red' },
+                    disabledStyle: { background: 'lightgray' },
                     children: [{
                         type: "text", text: "Third Button", margin: 15, horizontalAlignment: 'center', verticalAlignment: 'center', selectable: 'false'
                     },

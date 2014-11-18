@@ -5,34 +5,27 @@ var Layout;
         var self = Layout.contentHost(inheritor || this);
         self.type = 'button';
 
+        self.addProperty('isDisabled',{get:true,set:true,'default':false})
+        self.addProperty('pointerOverStyle');
+        self.addProperty('buttonDownStyle');
+        self.addProperty('disabledStyle');
+
         self.addTriggeredProperty('state', function (oldState) {
-            var state = (self.isPointerDown & self.isPointerOver) ? 'buttonDown' :
-                (self.isPointerOver ? 'pointerOver' : 'default');
+            var state = self.isDisabled?'disabled':( (self.isPointerDown & self.isPointerOver) ? 'buttonDown' :
+                (self.isPointerOver ? 'pointerOver' : 'default'));
             console.log('State: ' + state);
             self.applyStyle(state);
             return state;
         });
 
-        //self.addTriggeredProperty('test', function (oldState) {
-        //    console.log("Pointer over: " + self.isPointerOver);
-        //    return self.isPointerOver;
-        //});
-
-        self.addProperty('pointerOverStyle', function (style) {
-            console.log('Style set');
-            return style;
-        });
-
-        self.addProperty('buttonDownStyle', function (style) {
-            console.log('Style set');
-            return style;
-        });
-
         
-
-
+        
         var clickActivated = false;
         self.addTriggeredEvent('click', function () {
+            if (self.isDisabled) {
+                clickActivated = false;
+                return false;
+            }
             // First state for click
             if (self.isPointerOver && self.isPointerDown) {
                 clickActivated = true;
