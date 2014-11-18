@@ -24,13 +24,11 @@ var Layout;
         self.arrangeSelf = function (finalSize) {
             if (self.child) {
                 var childSize = self.protected.removeBorder(self.padding, finalSize);
-                childSize.x += self.padding.left;
-                childSize.y += self.padding.top;
+                childSize.x = self.padding.left;
+                childSize.y = self.padding.right;
                 self.child.arrange(childSize);
-                var selfSize = self.protected.addBorder(self.padding, self.child.actualSize);
-                childSize.x -= self.padding.left;
-                childSize.y -= self.padding.top;
-                return selfSize;
+                //var selfSize = self.protected.addBorder(self.padding, self.child.actualSize);                
+                return finalSize;
             } else {
                 return { x: 0, y: 0, width: Math.min(self.padding.width, finalSize.width), height: Math.min(self.padding.height, finalSize.height) };
             }

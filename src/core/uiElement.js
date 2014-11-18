@@ -267,16 +267,16 @@ var Layout;
         self.protected = {};
         self.protected.removeBorder = function (border, size) {
             return {
-                x: size.x,
-                y: size.y,
+                x: size.x + border.left,
+                y: size.y + border.top,
                 width: Math.max(0, size.width - border.left - border.right),
                 height: Math.max(0, size.height - border.top - border.bottom)
             };
         }
         self.protected.addBorder = function (border, size) {
             return {
-                x: size.x,
-                y: size.y,
+                x: size.x - border.left,
+                y: size.y - border.top,
                 width: size.width + border.left + border.right,
                 height: size.height + border.top + border.bottom
             }
@@ -327,8 +327,14 @@ var Layout;
         var lastRenderSize = { x: undefined, y: undefined, width: undefined, height: undefined };
         //var lastPadding = { top: -1, right: -1, bottom: -1, left: -1 };// Illegal value to force padding being applied the first time
         self.render = function (htmlParent, offset) {
-            offset = offset || { x: 0, y: 0 };
-            self.renderSize = { x: offset.x + self.actualSize.x + self.margin.top, y: offset.y + self.actualSize.y + self.margin.top, width: self.actualSize.width - self.margin.left - self.margin.right, height: self.actualSize.height - self.margin.top - self.margin.bottom };
+            offset = offset || 
+                { x: 0, y: 0 };
+            self.renderSize = {
+                x: offset.x + self.actualSize.x + self.margin.left,
+                y: offset.y + self.actualSize.y + self.margin.top,
+                width: self.actualSize.width - self.margin.left - self.margin.right,
+                height: self.actualSize.height - self.margin.top - self.margin.bottom
+            };
             //if (self.renderSize.width === lastRenderSize.width && self.renderSize.height === lastRenderSize.height && self.renderSize.x === lastRenderSize.x && self.renderSize.y === lastRenderSize.y && !self.needsRender) {
             //    return; // Nothing to render
             //}
@@ -387,7 +393,7 @@ var Layout;
 
             for (var i = 0; i < self.children.length; i++) {
                 var child = self.children[i];
-                child.render(htmlParent, self.renderSize);
+                child.render(htmlParent, { x: self.renderSize.x, y: self.renderSize.y });
             }
         };
         return self;
