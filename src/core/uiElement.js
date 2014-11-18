@@ -386,11 +386,14 @@ var Layout;
                     self.html.style.position = 'absolute';
                     //self.html.style.pointerEvents = 'none';
                     self.html.layoutElement = self;
-                    // Remove event handling from children since events are fully centrally managed
-                    // Since pointer events is hiearchical, only need to set one level
-                    for (var i = 0; i < self.html.children.length; i++) {
-                        self.html.children[i].style.pointerEvents = 'none';
-                    }
+
+                    // Incorrect code anyway, but it is not very helpful, need to find 
+                    // specific solution for specific type of elements
+                    //// Remove event handling from children since events are fully centrally managed
+                    //// Since pointer events is hiearchical, only need to set one level
+                    //for (var i = 0; i < self.html.children.length; i++) {
+                    //    self.html.children[i].style.pointerEvents = 'none';
+                    //}
 
 
                     //for (var name in cssValues) {

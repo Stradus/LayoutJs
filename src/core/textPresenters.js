@@ -137,10 +137,14 @@ var Layout;
                     textSpan.style.userSelect = 'none';
                     textSpan.style.mozUserSelect = 'none';
                     textSpan.style.webkitUserSelect = 'none';
+                    textSpan.style.msUserSelect = 'none';
+                    textSpan.style.cursor = 'default';
                 } else {
                     textSpan.style.userSelect = 'text';
                     textSpan.style.mozUserSelect = 'text';
                     textSpan.style.webkitUserSelect = 'text';
+                    textSpan.style.msUserSelect = 'text';
+                    textSpan.style.cursor = undefined;
                 }
             }
 

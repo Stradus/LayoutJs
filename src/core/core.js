@@ -47,27 +47,28 @@ var Layout;
     };
 
 
-    var propagateUp = function (element, propName, value, stopper) {
-        do {
-            element[propName] = value;
-            element = element.parent;
-        } while (element && element !== stopper);
-    };
+
     var windowEventHandlerCreated = false;
     var createWindowEventHandler = function () {
-        if (windowEventHandlerCreated) {
-            return;
+        var propagateUp = function (element, propName, value, stopper) {
+            do {
+                element[propName] = value;
+                element = element.parent;
+            } while (element && element !== stopper);
+        };
+        var getLayoutElementParent = function (htmlElement) {
+            while (!htmlElement.layoutElement) {
+                if (htmlElement.parentElement === null) {
+                    return undefined;
+                }
+                htmlElement = htmlElement.parentElement;
+            }
+            return htmlElement.layoutElement;
         }
-        //window.addEventListener('click', function (e) {
-        //    if (e.target.layoutElement) {
-        //        console.log('Created by: ' + e.target.layoutElement.type);
-        //    } else {
-        //        console.log('Unmanaged HTML element');
-        //    }
-        //});
+
         var lastMouseOverElement = undefined;
         window.addEventListener('mouseover', function (e) {
-            var target = e.target.layoutElement;
+            var target = getLayoutElementParent(e.target);
             if (lastMouseOverElement != target && lastMouseOverElement) {
                 propagateUp(lastMouseOverElement, 'isPointerOver', false, target);
             }
@@ -83,12 +84,12 @@ var Layout;
         });
         var lastPointerDownElement = undefined;
         window.addEventListener('mousedown', function (e) {
-            var target = e.target.layoutElement;
+            var target = getLayoutElementParent(e.target);
             if (lastPointerDownElement) {
                 propagateUp(target, 'isPointerDown', false);
                 lastPointerDownElement = undefined;
             }
-            
+
             if (target) {
                 propagateUp(target, 'isPointerDown', true);
                 lastPointerDownElement = target;
@@ -96,12 +97,18 @@ var Layout;
         });
 
         window.addEventListener('mouseup', function (e) {
-            var target = e.target.layoutElement;
+            var target = getLayoutElementParent(e.target);
             if (lastPointerDownElement) {
                 propagateUp(lastPointerDownElement, 'isPointerDown', false);
                 lastPointerDownElement = undefined;
             }
         });
+
+        window.addEventListener('dragstart', function (e) {
+            e.preventDefault();
+            return false;
+        });
+
 
         windowEventHandlerCreated = true;
     };

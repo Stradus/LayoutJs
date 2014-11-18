@@ -19,7 +19,12 @@ var LayoutTest;
                     buttonDownStyle: { background: 'red' },
                     disabledStyle: {background:'lightgray'},
                     children: [{
-                        type: "text", text: "Button Text", margin: 5, horizontalAlignment: 'center', verticalAlignment: 'center', selectable: 'false'
+                        type: "text",
+                        text: "Button Text",
+                        margin: 5,
+                        horizontalAlignment: 'center',
+                        verticalAlignment: 'center',
+                        selectable: false
                     },
                     ]
                 }, {
@@ -34,7 +39,12 @@ var LayoutTest;
                     buttonDownStyle: { background: 'red' },
                     disabledStyle: { background: 'lightgray' },
                     children: [{
-                        type: "text", text: "Second Button", margin: 10, horizontalAlignment: 'center', verticalAlignment: 'center', selectable: 'false'
+                        type: "text",
+                        text: "Second Button",
+                        margin: 10,
+                        horizontalAlignment: 'center',
+                        verticalAlignment: 'center',
+                        selectable: true
                     },
                     ]
                 }, {
@@ -48,7 +58,12 @@ var LayoutTest;
                     buttonDownStyle: { background: 'red' },
                     disabledStyle: { background: 'lightgray' },
                     children: [{
-                        type: "text", text: "Third Button", margin: 15, horizontalAlignment: 'center', verticalAlignment: 'center', selectable: 'false'
+                        type: "text",
+                        text: "Third Button",
+                        margin: 15,
+                        horizontalAlignment: 'center',
+                        verticalAlignment: 'center',
+                        selectable: true
                     },
                     ]
                 }]
