@@ -5,6 +5,7 @@ var Layout;
         var self = Layout.uiElement(inheritor || this);
         self.type = 'stackPanel';
         self.addProperty('orientation', { get: true, set: true, 'default': 'vertical', needsMeasure: true });
+        self.addProperty('collapseInBetweenMargins', { get: true, set: true, 'default':true, needsMeasure:true });
         self.addCssProperty('background', false, undefined);
 
         self.measureSelf = function (availableSize) {
@@ -24,16 +25,23 @@ var Layout;
             }
             var desiredSize = { width: 0, height: 0 };
 
-
+            
             for (var i = 0; i < self.children.length; i++) {
                 var child = self.children[i];
+                var collapseMargins = self.collapseInBetweenMargins && i < self.children.length - 1;
                 child.measure(childSize);
                 if (self.orientation === 'vertical') {
                     desiredSize.width = Math.max(desiredSize.width, child.desiredSize.width);
                     desiredSize.height += child.desiredSize.height;
+                    if (collapseMargins) {
+                        desiredSize.height -= Math.min(child.margin.bottom, self.children[i + 1].margin.top);
+                    }
                 } else {
                     desiredSize.width += child.desiredSize.width;
                     desiredSize.height = Math.max(desiredSize.height, child.desiredSize.height);
+                    if (collapseMargins) {
+                        desiredSize.width -= Math.min(child.margin.right, self.children[i + 1].margin.left);
+                    }
                 }
             }
             desiredSize.width += self.padding.left + self.padding.right;
@@ -45,6 +53,7 @@ var Layout;
             var offset = 0;
             for (var i = 0; i < self.children.length; i++) {
                 var child = self.children[i];
+                var collapseMargins = self.collapseInBetweenMargins && i < self.children.length - 1;
                 if (self.orientation === 'vertical') {
                     child.arrange({
                         x: self.padding.left,
@@ -52,6 +61,9 @@ var Layout;
                         width: Math.max(finalSize.width - self.padding.left - self.padding.right, child.desiredSize.width),
                         height: child.desiredSize.height
                     });
+                    if (collapseMargins) {
+                        offset -= Math.min(child.margin.bottom, self.children[i + 1].margin.top);
+                    }
                     offset += child.desiredSize.height;
                 } else {
                     child.arrange({
@@ -60,6 +72,9 @@ var Layout;
                         width: child.desiredSize.width,
                         height: Math.max(finalSize.height - self.padding.top - self.padding.bottom, child.desiredSize.height)
                     });
+                    if (collapseMargins) {
+                        offset -= Math.min(child.margin.right, self.children[i + 1].margin.left);
+                    }
                     offset += child.desiredSize.width;
                 }
             }
