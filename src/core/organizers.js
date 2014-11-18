@@ -25,23 +25,36 @@ var Layout;
             }
             var desiredSize = { width: 0, height: 0 };
 
-            
+            var collapse = self.collapseInBetweenMargins;
+            var firstMargin = undefined;
             for (var i = 0; i < self.children.length; i++) {
-                var child = self.children[i];
-                var collapseMargins = self.collapseInBetweenMargins && i < self.children.length - 1;
+                var child = self.children[i];                
+                //var collapseMargins = self.collapseInBetweenMargins && i < self.children.length - 1;
                 child.measure(childSize);
                 if (self.orientation === 'vertical') {
                     desiredSize.width = Math.max(desiredSize.width, child.desiredSize.width);
                     desiredSize.height += child.desiredSize.height;
-                    if (collapseMargins) {
-                        desiredSize.height -= Math.min(child.margin.bottom, self.children[i + 1].margin.top);
+                    if (collapse && child.display !== 'collapsed') {
+                        if (firstMargin !== undefined) {
+                            desiredSize.height -= Math.max(child.margin.top, firstMargin);
+                        }
+                        firstMargin = child.margin.bottom;
                     }
+                  //  if (collapseMargins) {
+                    //    desiredSize.height -= Math.min(child.margin.bottom, self.children[i + 1].margin.top);
+                    //}
                 } else {
                     desiredSize.width += child.desiredSize.width;
                     desiredSize.height = Math.max(desiredSize.height, child.desiredSize.height);
-                    if (collapseMargins) {
-                        desiredSize.width -= Math.min(child.margin.right, self.children[i + 1].margin.left);
+                    if (collapse && child.display !== 'collapsed') {
+                        if (firstMargin !== undefined) {
+                            desiredSize.width -= Math.max(child.margin.right, firstMargin);
+                        }
+                        firstMargin = child.margin.left;
                     }
+                    //if (collapseMargins) {
+                    //    desiredSize.width -= Math.min(child.margin.right, self.children[i + 1].margin.left);
+                    //}
                 }
             }
             desiredSize.width += self.padding.left + self.padding.right;
@@ -51,30 +64,39 @@ var Layout;
 
         self.arrangeSelf = function (finalSize) {
             var offset = 0;
+            var collapse = self.collapseInBetweenMargins;
+            var firstMargin = undefined;
             for (var i = 0; i < self.children.length; i++) {
                 var child = self.children[i];
-                var collapseMargins = self.collapseInBetweenMargins && i < self.children.length - 1;
                 if (self.orientation === 'vertical') {
+                    if (collapse && child.display !== 'collapsed') {
+                        if (firstMargin !== undefined) {
+                            offset -= Math.max(child.margin.top, firstMargin);
+                        }
+                        firstMargin = child.margin.bottom;
+                    }
                     child.arrange({
                         x: self.padding.left,
                         y: offset + self.padding.top,
                         width: Math.max(finalSize.width - self.padding.left - self.padding.right, child.desiredSize.width),
                         height: child.desiredSize.height
                     });
-                    if (collapseMargins) {
-                        offset -= Math.min(child.margin.bottom, self.children[i + 1].margin.top);
-                    }
+                    
                     offset += child.desiredSize.height;
                 } else {
+                    if (collapse && child.display !== 'collapsed') {
+                        if (firstMargin !== undefined) {
+                            offset -= Math.max(child.margin.right, firstMargin);
+                        }
+                        firstMargin = child.margin.left;
+                    }
                     child.arrange({
                         x: offset + self.padding.left,
                         y: self.padding.top,
                         width: child.desiredSize.width,
                         height: Math.max(finalSize.height - self.padding.top - self.padding.bottom, child.desiredSize.height)
                     });
-                    if (collapseMargins) {
-                        offset -= Math.min(child.margin.right, self.children[i + 1].margin.left);
-                    }
+                    
                     offset += child.desiredSize.width;
                 }
             }

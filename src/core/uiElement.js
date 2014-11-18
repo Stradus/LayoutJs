@@ -169,7 +169,7 @@ var Layout;
                 return; // Nothing to set for the default style
             }
             for (var name in style) {
-                var oldValue = Layout.peekPropertyValue( self, name);
+                var oldValue = Layout.peekPropertyValue(self, name);
                 var newValue = style[name];
                 if (newValue !== oldValue) {
                     styleChanges[name] = oldValue;
@@ -180,11 +180,12 @@ var Layout;
 
         Object.defineProperty(self, 'parent', { get: function () { return parent; } });
 
+        self.addProperty('display', { get: true, set: true, 'default': 'visible', needsMeasure: true });
         self.addProperty('horizontalAlignment', { get: true, set: true, 'default': 'stretch', needsArrange: true });
         self.addProperty('verticalAlignment', { get: true, set: true, 'default': 'stretch', needsArrange: true });
 
         self.addProperty('margin', {
-            get: true, set: true, 'default':{ top: 0, right: 0, bottom: 0, left: 0 },
+            get: true, set: true, 'default': { top: 0, right: 0, bottom: 0, left: 0 },
             onChange: function (v) {
                 if (typeof v === 'number') {
                     return { top: v, right: v, bottom: v, left: v };
@@ -286,10 +287,18 @@ var Layout;
         var addMargin = function (size) { return self.protected.addBorder(self.margin, size); };
 
         self.measure = function (availableSize) {
+            if (self.display === 'collapsed') {
+                self.desiredSize = { width: 0, height: 0 };
+                return;
+            }
             self.desiredSize = addMargin(self.measureSelf(removeMargin(availableSize)));
         };
 
         self.arrange = function (finalSize) {
+            if (self.display === 'collapsed') {
+                self.actualSize = { x: 0, y: 0, width: 0, height: 0 };
+                return;
+            }
             //var marginSize = removeMargin(finalSize);
             var availableSize = { x: finalSize.x, y: finalSize.y, width: finalSize.width, height: finalSize.height };
             if (self.horizontalAlignment !== 'stretch') {
@@ -325,9 +334,42 @@ var Layout;
         };
         var lastHtmlParent;
         var lastRenderSize = { x: undefined, y: undefined, width: undefined, height: undefined };
+        var lastDisplay;
+        var lastWasVisible = true;
+        var hideHtml = function (element) {
+            if (element.html) {                
+                element.html.style.display = 'none';
+            };
+            for (var i = 0; i < element.children.length; i++) {
+                hideHtml(element.children[i]);
+            }
+        };
+
+        var showHtml = function (element) {
+            if (element.html) {
+                element.html.style.display = 'block';
+            };
+            for (var i = 0; i < element.children.length; i++) {
+                showHtml(element.children[i]);
+            }
+        };
+
         //var lastPadding = { top: -1, right: -1, bottom: -1, left: -1 };// Illegal value to force padding being applied the first time
         self.render = function (htmlParent, offset) {
-            offset = offset || 
+            if (self.display !== 'visible') {
+                if (lastWasVisible) {
+                    lastWasVisible = false;
+                    hideHtml(self);
+                }
+                return;
+            }
+            if (!lastWasVisible) {
+                lastWasVisible = true;
+                showHtml(self);
+            }
+
+
+            offset = offset ||
                 { x: 0, y: 0 };
             self.renderSize = {
                 x: offset.x + self.actualSize.x + self.margin.left,
@@ -338,9 +380,9 @@ var Layout;
             //if (self.renderSize.width === lastRenderSize.width && self.renderSize.height === lastRenderSize.height && self.renderSize.x === lastRenderSize.x && self.renderSize.y === lastRenderSize.y && !self.needsRender) {
             //    return; // Nothing to render
             //}
-            if (self.createHtml) {
+            if (self.createHtml && self.display === 'visible') {
                 if (self.createHtml()) {
-                    self.html.style.display = 'block';
+                    //self.html.style.display = 'block';
                     self.html.style.position = 'absolute';
                     //self.html.style.pointerEvents = 'none';
                     self.html.layoutElement = self;
@@ -361,6 +403,7 @@ var Layout;
             }
             if (self.html) {
                 var html = self.html;
+                //self.html.style.display = 'block';
                 for (var name in changedCssValues) {
                     html.style[name] = changedCssValues[name];
                 }
@@ -374,19 +417,10 @@ var Layout;
                 html.style.height = self.renderSize.height + 'px';
                 html.style.left = self.renderSize.x + 'px';
                 html.style.top = self.renderSize.y + 'px';
-                //if (self.setPadding && (
-                //    lastPadding.top !== self.padding.top ||
-                //    lastPadding.right !== self.padding.right ||
-                //    lastPadding.bottom !== self.padding.bottom ||
-                //    lastPadding.left !== self.padding.left)) {
-                //    html.style.paddingTop = self.padding.top + 'px';
-                //    html.style.paddingRight = self.padding.right + 'px';
-                //    html.style.paddingBottom = self.padding.bottom + 'px';
-                //    html.style.paddingLeft = self.padding.left + 'px';
-                //    lastPadding = self.padding;
-                //}
-                //htmlParent = html;
             }
+
+            // We still carry out these stpes even if we are collapsed since we have to make sure
+            // we dont display the children as well
             if (self.renderSelf) {
                 self.renderSelf(self.renderSize);
             }
