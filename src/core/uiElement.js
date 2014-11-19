@@ -54,17 +54,19 @@ var Layout;
             Layout.addTriggeredEvent(self, name, trigger);
         };
 
+
         var cssValues = {};
         var changedCssValues = {};
+        var changeCssValue = function (name, value) {
+            if (value !== cssValues[name]) {
+                cssValues[name] = value;
+                changedCssValues[name] = value;
+                self.needsRender = true;
+            }
+            return value;
+        };
         self.addCssProperty = function (name, needsMeasure, defaultValue, validValues) {
-            var changeFunc = function (v) {
-                if (v !== cssValues[name]) {
-                    cssValues[name] = v;
-                    changedCssValues[name] = v;
-                    self.needsRender = true;
-                }
-                return v;
-            };
+            var changeFunc = changeCssValue.bind(this, name);
             if (arguments.length > 2) {
                 changeFunc(defaultValue);
             }
@@ -187,7 +189,7 @@ var Layout;
             get: true, set: true, 'default': 'visible', needsMeasure: true,
             validValues: ['visible', 'hidden', 'collapsed']
         });
-        
+
         self.addProperty('horizontalAlignment', {
             get: true, set: true, 'default': 'stretch', needsArrange: true,
             validValues: ['left', 'center', 'right', 'stretch']
@@ -203,7 +205,7 @@ var Layout;
             get: true, set: true, 'default': zeroThickness,
             onChange: function (v) {
                 var thickness;
-                if (typeof v === 'number') {                    
+                if (typeof v === 'number') {
                     thickness = { top: v, right: v, bottom: v, left: v };
                 } else {
                     thickness = { top: v.top || 0, right: v.right || 0, bottom: v.bottom || 0, left: v.left || 0 };
@@ -225,7 +227,7 @@ var Layout;
             }
             thickness.totalWidth = thickness.left + thickness.right;
             thickness.totalHeight = thickness.top + thickness.bottom;
-            return Object.freeze(thickness);            
+            return Object.freeze(thickness);
         };
         self.addProperty('border', {
             get: true, set: true, 'default': zeroThickness,
@@ -238,8 +240,27 @@ var Layout;
             needsMeasure: true
         })
 
-        self.addCssProperty('borderStyle', false, 'solid', ['dotted','dashed','solid','double','groove','ridge','inset','outset']);
+        self.addCssProperty('borderStyle', false, 'solid', ['dotted', 'dashed', 'solid', 'double', 'groove', 'ridge', 'inset', 'outset']);
         self.addCssProperty('borderColor', false, 'black');
+        var zeroRadius = Object.freeze({topLeft:0, topRight:0, bottomRight:0, bottomLeft:0});
+        self.addProperty('cornerRadius', {
+            get: true,
+            set: true,
+            onChange: function (v) {
+                var radius;
+                if (typeof v === 'number') {
+                    radius = { topLeft: v, topRight: v, bottomRight: v, bottomLeft: v };
+                } else {
+                    radius = { topLeft: v.topLeft || 0, topRight: v.topRight || 0, 
+                        bottomRight: v.bottomRight || 0, bottomLeft: v.bottomLeft || 0 };
+                }
+                changeCssValue('borderRadius', radius.topLeft + 'px ' + radius.topRight + 'px '
+                    + radius.bottomRight + 'px ' + radius.bottomLeft + 'px');
+                return Object.freeze(radius);
+            },
+            'default':zeroRadius
+        });
+
 
         self.addProperty('isPointerOver', { get: true, set: true, 'default': false });
         self.addProperty('isPointerDown', { get: true, set: true, 'default': false });
@@ -255,7 +276,7 @@ var Layout;
         }
 
         self.addChild = function (child) {
-            if (!child ) {
+            if (!child) {
                 self.removeAllChildren();
                 return;
             }
@@ -322,11 +343,11 @@ var Layout;
 
         self.protected.subtractOutside = function (size) {
             return {
-                x: size.x + self.border.left +self.margin.left,
+                x: size.x + self.border.left + self.margin.left,
                 y: size.y + self.border.top + self.margin.top,
                 width: Math.max(0, size.width - self.border.totalWidth - self.margin.totalWidth),
                 height: Math.max(0, size.height - self.border.totalHeight - self.margin.totalHeight)
-            };            
+            };
         }
         self.protected.addOutside = function (size) {
             return {
@@ -342,12 +363,12 @@ var Layout;
                 y: size.y + self.padding.top,
                 width: Math.max(0, size.width - self.padding.totalWidth),
                 height: Math.max(0, size.height - self.padding.totalHeight)
-            };            
+            };
         }
         self.protected.addPadding = function (size) {
             return {
                 x: size.x - self.padding.left,
-                y: size.y - self.padding.top ,
+                y: size.y - self.padding.top,
                 width: Math.max(0, size.width + self.padding.totalWidth),
                 height: Math.max(0, size.height + self.padding.totalHeight)
             };
@@ -411,7 +432,7 @@ var Layout;
         var lastBorder;
         var lastWasVisible = true;
         var hideHtml = function (element) {
-            if (element.html) {                
+            if (element.html) {
                 element.html.style.display = 'none';
             };
             for (var i = 0; i < element.children.length; i++) {
@@ -446,10 +467,10 @@ var Layout;
             offset = offset ||
                 { x: 0, y: 0 };
             self.renderSize = {
-                x: offset.x + self.actualSize.x + self.margin.left ,
-                y: offset.y + self.actualSize.y + self.margin.top ,
-                width: self.actualSize.width - self.margin.totalWidth -self.border.totalWidth,
-                height: self.actualSize.height - self.margin.totalHeight -self.border.totalHeight
+                x: offset.x + self.actualSize.x + self.margin.left,
+                y: offset.y + self.actualSize.y + self.margin.top,
+                width: self.actualSize.width - self.margin.totalWidth - self.border.totalWidth,
+                height: self.actualSize.height - self.margin.totalHeight - self.border.totalHeight
             };
             //if (self.renderSize.width === lastRenderSize.width && self.renderSize.height === lastRenderSize.height && self.renderSize.x === lastRenderSize.x && self.renderSize.y === lastRenderSize.y && !self.needsRender) {
             //    return; // Nothing to render
@@ -512,7 +533,7 @@ var Layout;
 
             for (var i = 0; i < self.children.length; i++) {
                 var child = self.children[i];
-                child.render(htmlParent, { x: self.renderSize.x +self.border.left, y: self.renderSize.y+self.border.top });
+                child.render(htmlParent, { x: self.renderSize.x + self.border.left, y: self.renderSize.y + self.border.top });
             }
         };
         return self;
