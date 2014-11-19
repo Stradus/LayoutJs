@@ -36,7 +36,7 @@ var Layout;
                     desiredSize.height += child.desiredSize.height;
                     if (collapse && child.display !== 'collapsed') {
                         if (firstMargin !== undefined) {
-                            desiredSize.height -= Math.max(child.margin.top, firstMargin);
+                            desiredSize.height -= Math.min(child.margin.top, firstMargin);
                         }
                         firstMargin = child.margin.bottom;
                     }
@@ -48,7 +48,7 @@ var Layout;
                     desiredSize.height = Math.max(desiredSize.height, child.desiredSize.height);
                     if (collapse && child.display !== 'collapsed') {
                         if (firstMargin !== undefined) {
-                            desiredSize.width -= Math.max(child.margin.right, firstMargin);
+                            desiredSize.width -= Math.min(child.margin.right, firstMargin);
                         }
                         firstMargin = child.margin.left;
                     }
@@ -71,7 +71,7 @@ var Layout;
                 if (self.orientation === 'vertical') {
                     if (collapse && child.display !== 'collapsed') {
                         if (firstMargin !== undefined) {
-                            offset -= Math.max(child.margin.top, firstMargin);
+                            offset -= Math.min(child.margin.top, firstMargin);
                         }
                         firstMargin = child.margin.bottom;
                     }
@@ -86,7 +86,7 @@ var Layout;
                 } else {
                     if (collapse && child.display !== 'collapsed') {
                         if (firstMargin !== undefined) {
-                            offset -= Math.max(child.margin.right, firstMargin);
+                            offset -= Math.min(child.margin.right, firstMargin);
                         }
                         firstMargin = child.margin.left;
                     }

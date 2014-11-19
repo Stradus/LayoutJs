@@ -46,7 +46,9 @@ var Layout;
         return;
     };
 
-
+    Layout.performance = {
+        checkValidPropertyValues : true
+    };
 
     var windowEventHandlerCreated = false;
     var createWindowEventHandler = function () {

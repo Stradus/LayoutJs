@@ -56,7 +56,7 @@ var Layout;
 
         var cssValues = {};
         var changedCssValues = {};
-        self.addCssProperty = function (name, needsMeasure, defaultValue) {
+        self.addCssProperty = function (name, needsMeasure, defaultValue, validValues) {
             var changeFunc = function (v) {
                 if (v !== cssValues[name]) {
                     cssValues[name] = v;
@@ -74,13 +74,14 @@ var Layout;
                 get: true,
                 set: true,
                 onChange: changeFunc,
-                'default': defaultValue
+                'default': defaultValue,
+                validValues: validValues
             });
         };
 
         var attrValues = {};
         //var changedAttrValues = {};
-        self.addAttrProperty = function (name, needsMeasure, defaultValue) {
+        self.addAttrProperty = function (name, needsMeasure, defaultValue, validValues) {
             var changeFunc = function (v) {
                 attrValues[name] = v;
                 if (self.html) {
@@ -95,7 +96,9 @@ var Layout;
                 needsMeasure: needsMeasure,
                 get: true,
                 set: true,
-                onChange: changeFunc
+                'default': defaultValue,
+                onChange: changeFunc,
+                validValues: validValues
             });
         };
 
@@ -180,34 +183,64 @@ var Layout;
 
         Object.defineProperty(self, 'parent', { get: function () { return parent; } });
 
-        self.addProperty('display', { get: true, set: true, 'default': 'visible', needsMeasure: true });
-        self.addProperty('horizontalAlignment', { get: true, set: true, 'default': 'stretch', needsArrange: true });
-        self.addProperty('verticalAlignment', { get: true, set: true, 'default': 'stretch', needsArrange: true });
+        self.addProperty('display', {
+            get: true, set: true, 'default': 'visible', needsMeasure: true,
+            validValues: ['visible', 'hidden', 'collapsed']
+        });
+        
+        self.addProperty('horizontalAlignment', {
+            get: true, set: true, 'default': 'stretch', needsArrange: true,
+            validValues: ['left', 'center', 'right', 'stretch']
+        });
 
+        self.addProperty('verticalAlignment', {
+            get: true, set: true, 'default': 'stretch', needsArrange: true,
+            validValues: ['top', 'center', 'bottom', 'stretch']
+        });
+        var zeroThickness = { top: 0, right: 0, bottom: 0, left: 0 };
+        Object.freeze(zeroThickness); // Should never change
         self.addProperty('margin', {
-            get: true, set: true, 'default': { top: 0, right: 0, bottom: 0, left: 0 },
+            get: true, set: true, 'default': zeroThickness,
             onChange: function (v) {
-                if (typeof v === 'number') {
-                    return { top: v, right: v, bottom: v, left: v };
+                var thickness;
+                if (typeof v === 'number') {                    
+                    thickness = { top: v, right: v, bottom: v, left: v };
                 } else {
-                    return { top: v.top || 0, right: v.right || 0, bottom: v.bottom || 0, left: v.left || 0 };
+                    thickness = { top: v.top || 0, right: v.right || 0, bottom: v.bottom || 0, left: v.left || 0 };
                 }
+                thickness.totalWidth = thickness.left + thickness.right;
+                thickness.totalHeight = thickness.top + thickness.bottom;
+                return Object.freeze(thickness);
             },
+            needsMeasure: true
+        })
+        var positiveThicknessChangeFunc = function (v) {
+            // Border or Padding can never be negative
+            var thickness;
+            if (typeof v === 'number') {
+                if (v < 0) { v = 0; }
+                thickness = { top: v, right: v, bottom: v, left: v };
+            } else {
+                thickness = { top: Math.max(0, v.top || 0), right: Math.max(0, v.right || 0), bottom: Math.max(0, v.bottom || 0), left: Math.max(0, v.left || 0) };
+            }
+            thickness.totalWidth = thickness.left + thickness.right;
+            thickness.totalHeight = thickness.top + thickness.bottom;
+            return Object.freeze(thickness);            
+        };
+        self.addProperty('border', {
+            get: true, set: true, 'default': zeroThickness,
+            onChange: positiveThicknessChangeFunc,
             needsMeasure: true
         })
         self.addProperty('padding', {
-            get: true, set: true, 'default': { top: 0, right: 0, bottom: 0, left: 0 },
-            onChange: function (v) {
-                // Padding can never be negative
-                if (typeof v === 'number') {
-                    if (v < 0) { v = 0; }
-                    return { top: v, right: v, bottom: v, left: v };
-                } else {
-                    return { top: Math.max(0, v.top || 0), right: Math.max(0, v.right || 0), bottom: Math.max(0, v.bottom || 0), left: Math.max(0, v.left || 0) };
-                }
-            },
+            get: true, set: true, 'default': zeroThickness,
+            onChange: positiveThicknessChangeFunc,
             needsMeasure: true
         })
+
+        self.addCssProperty('borderStyle', false, 'solid', ['dotted','dashed','solid','double','groove','ridge','inset','outset']);
+        self.addCssProperty('borderColor', false, 'black');
+
         self.addProperty('isPointerOver', { get: true, set: true, 'default': false });
         self.addProperty('isPointerDown', { get: true, set: true, 'default': false });
 
@@ -222,6 +255,10 @@ var Layout;
         }
 
         self.addChild = function (child) {
+            if (!child ) {
+                self.removeAllChildren();
+                return;
+            }
             if (maxChildren === 0) {
                 throw "Element does not support children";
             }
@@ -266,32 +303,68 @@ var Layout;
         }
 
         self.protected = {};
-        self.protected.removeBorder = function (border, size) {
-            return {
-                x: size.x + border.left,
-                y: size.y + border.top,
-                width: Math.max(0, size.width - border.left - border.right),
-                height: Math.max(0, size.height - border.top - border.bottom)
-            };
-        }
-        self.protected.addBorder = function (border, size) {
-            return {
-                x: size.x - border.left,
-                y: size.y - border.top,
-                width: size.width + border.left + border.right,
-                height: size.height + border.top + border.bottom
-            }
-        }
+        //self.protected.subtractThickness = function (border, size) {
+        //    return {
+        //        x: size.x + border.left,
+        //        y: size.y + border.top,
+        //        width: Math.max(0, size.width - border.left - border.right),
+        //        height: Math.max(0, size.height - border.top - border.bottom)
+        //    };
+        //}
+        //self.protected.addThickness = function (border, size) {
+        //    return {
+        //        x: size.x - border.left,
+        //        y: size.y - border.top,
+        //        width: size.width + border.left + border.right,
+        //        height: size.height + border.top + border.bottom
+        //    }
+        //}
 
-        var removeMargin = function (size) { return self.protected.removeBorder(self.margin, size); };
-        var addMargin = function (size) { return self.protected.addBorder(self.margin, size); };
+        self.protected.subtractOutside = function (size) {
+            return {
+                x: size.x + self.border.left +self.margin.left,
+                y: size.y + self.border.top + self.margin.top,
+                width: Math.max(0, size.width - self.border.totalWidth - self.margin.totalWidth),
+                height: Math.max(0, size.height - self.border.totalHeight - self.margin.totalHeight)
+            };            
+        }
+        self.protected.addOutside = function (size) {
+            return {
+                x: size.x - self.border.left - self.margin.left,
+                y: size.y - self.border.top - self.margin.top,
+                width: Math.max(0, size.width + self.border.totalWidth + self.margin.totalWidth),
+                height: Math.max(0, size.height + self.border.totalHeight + self.margin.totalHeight)
+            };
+        };
+        self.protected.subtractPadding = function (size) {
+            return {
+                x: size.x + self.padding.left,
+                y: size.y + self.padding.top,
+                width: Math.max(0, size.width - self.padding.totalWidth),
+                height: Math.max(0, size.height - self.padding.totalHeight)
+            };            
+        }
+        self.protected.addPadding = function (size) {
+            return {
+                x: size.x - self.padding.left,
+                y: size.y - self.padding.top ,
+                width: Math.max(0, size.width + self.padding.totalWidth),
+                height: Math.max(0, size.height + self.padding.totalHeight)
+            };
+        };
+
+        var subtractOutside = self.protected.subtractOutside;
+        var addOutside = self.protected.addOutside;
+
+        //var removeThickness = function (size) { return self.protected.removeBorder(self.margin, size); };
+        //var addThickness = function (size) { return self.protected.addBorder(self.margin, size); };
 
         self.measure = function (availableSize) {
             if (self.display === 'collapsed') {
                 self.desiredSize = { width: 0, height: 0 };
                 return;
             }
-            self.desiredSize = addMargin(self.measureSelf(removeMargin(availableSize)));
+            self.desiredSize = addOutside(self.measureSelf(subtractOutside(availableSize)));
         };
 
         self.arrange = function (finalSize) {
@@ -299,7 +372,7 @@ var Layout;
                 self.actualSize = { x: 0, y: 0, width: 0, height: 0 };
                 return;
             }
-            //var marginSize = removeMargin(finalSize);
+            //var marginSize = removeThickness(finalSize);
             var availableSize = { x: finalSize.x, y: finalSize.y, width: finalSize.width, height: finalSize.height };
             if (self.horizontalAlignment !== 'stretch') {
                 availableSize.width = self.desiredSize.width;
@@ -307,7 +380,7 @@ var Layout;
             if (self.verticalAlignment !== 'stretch') {
                 availableSize.height = self.desiredSize.height;
             }
-            self.actualSize = addMargin(self.arrangeSelf(removeMargin(availableSize)));
+            self.actualSize = addOutside(self.arrangeSelf(subtractOutside(availableSize)));
             var fullSize = self.actualSize;
             var offset = { x: 0, y: 0 };
             if (self.horizontalAlignment === 'center' ||
@@ -335,6 +408,7 @@ var Layout;
         var lastHtmlParent;
         var lastRenderSize = { x: undefined, y: undefined, width: undefined, height: undefined };
         var lastDisplay;
+        var lastBorder;
         var lastWasVisible = true;
         var hideHtml = function (element) {
             if (element.html) {                
@@ -372,10 +446,10 @@ var Layout;
             offset = offset ||
                 { x: 0, y: 0 };
             self.renderSize = {
-                x: offset.x + self.actualSize.x + self.margin.left,
-                y: offset.y + self.actualSize.y + self.margin.top,
-                width: self.actualSize.width - self.margin.left - self.margin.right,
-                height: self.actualSize.height - self.margin.top - self.margin.bottom
+                x: offset.x + self.actualSize.x + self.margin.left ,
+                y: offset.y + self.actualSize.y + self.margin.top ,
+                width: self.actualSize.width - self.margin.totalWidth -self.border.totalWidth,
+                height: self.actualSize.height - self.margin.totalHeight -self.border.totalHeight
             };
             //if (self.renderSize.width === lastRenderSize.width && self.renderSize.height === lastRenderSize.height && self.renderSize.x === lastRenderSize.x && self.renderSize.y === lastRenderSize.y && !self.needsRender) {
             //    return; // Nothing to render
@@ -412,6 +486,14 @@ var Layout;
                 }
                 changedCssValues = {};
 
+                if (lastBorder !== self.border) {
+                    lastBorder = self.border;
+                    html.style.borderWidth = self.border.top + 'px ' +
+                        self.border.right + 'px ' +
+                        self.border.bottom + 'px ' +
+                        self.border.left + 'px';
+                }
+
                 if (lastHtmlParent !== htmlParent) {
                     lastHtmlParent = htmlParent;
                     htmlParent.appendChild(html);
@@ -430,7 +512,7 @@ var Layout;
 
             for (var i = 0; i < self.children.length; i++) {
                 var child = self.children[i];
-                child.render(htmlParent, { x: self.renderSize.x, y: self.renderSize.y });
+                child.render(htmlParent, { x: self.renderSize.x +self.border.left, y: self.renderSize.y+self.border.top });
             }
         };
         return self;

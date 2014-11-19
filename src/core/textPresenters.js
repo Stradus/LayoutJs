@@ -81,8 +81,14 @@ var Layout;
         self.addCssProperty('fontSize', true, '12px');
         self.addCssProperty('fontFamily', true, 'sans-serif');
         self.addProperty('selectable', { needsRender: true, get: true, set: true, 'default': true });
-        self.addProperty('horizontalContentAlignment', { needsRender: true, get: true, set: true, 'default': 'left' });
-        self.addProperty('verticalContentAlignment', { needsRender: true, get: true, set: true, 'default': 'top' });
+        self.addProperty('horizontalContentAlignment', {
+            needsRender: true, get: true, set: true, 'default': 'left',
+            validValues: ['left', 'center', 'right', 'stretch']
+        });
+        self.addProperty('verticalContentAlignment', {
+            needsRender: true, get: true, set: true, 'default': 'top',
+            validValues: ['top', 'center', 'bottom', 'stretch']
+        });
 
         var lastText, lastFont, lastWidth, lastHeight, lastLineHeight, lastHorizontalContentAlignment, lastVerticalContentAlignment, lastPadding, lastFontOffset;
         self.measureSelf = function (availableSize) {
@@ -112,7 +118,7 @@ var Layout;
         self.createHtml = function () {
             if (!self.html) {
                 self.html = document.createElement('div');
-                self.html.style.boxSizing = 'border-box';
+                //self.html.style.boxSizing = 'border-box';
                 textSpan = document.createElement('span');
                 textSpan.style.display = 'block';
                 textSpan.style.position = 'absolute';

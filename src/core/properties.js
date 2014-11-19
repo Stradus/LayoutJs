@@ -136,6 +136,14 @@ var Layout;
             needsArrange: options.needsArrange,
             needsRender: options.needsRender
         };
+
+        if (Layout.performance.checkValidPropertyValues && options.validValues) {
+            property.validValues = new Set();
+            for (var i = 0; i < options.validValues.length; i++) {
+                property.validValues.add(options.validValues[i]);
+            }
+        };
+
         var o = {};
         if (options.get) {
             o.get = function () {
@@ -149,6 +157,11 @@ var Layout;
             // If there is a perf bottleneck, one could pre-create separate functions for 
             // all these cases
             o.set = function (v) {
+                if (property.validValues) {
+                    if (!property.validValues.has(v)) {
+                        throw "Incorrect value(" + v + ") for property: " + property.name;
+                    }
+                }
                 if (recordAccess) {
                     accessedForWrite(property);
                 }
