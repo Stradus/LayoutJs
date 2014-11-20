@@ -22,7 +22,9 @@ var LayoutThemes;
                 borderColor: '#adadad',
                 boxShadow: 'inset 0 3px 5px rgba(0,0,0,.125)'
             },
-
+            disabledStyle: {              
+                opacity: 0.65
+            },
             template: {
                 type: 'text',
                 color: '#333',
@@ -30,7 +32,7 @@ var LayoutThemes;
                 margin: 10,
                 horizontalAlignment: 'center',
                 verticalAlignment: 'center',
-                hoistProperties: ['text']                
+                hoistProperties: ['text', 'opacity']                
             }
         }
         ]

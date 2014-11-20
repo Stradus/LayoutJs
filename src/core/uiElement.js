@@ -313,6 +313,7 @@ var Layout;
         self.addCssProperty('boxShadow', false, '');
         self.addCssProperty('borderStyle', false, 'solid', ['dotted', 'dashed', 'solid', 'double', 'groove', 'ridge', 'inset', 'outset']);
         self.addCssProperty('borderColor', false, 'black');
+        self.addCssProperty('opacity', false);
         var zeroRadius = Object.freeze({topLeft:0, topRight:0, bottomRight:0, bottomLeft:0});
         self.addProperty('cornerRadius', {
             get: true,

@@ -4,7 +4,10 @@ var Layout;
     Layout.stack = function (inheritor) {
         var self = Layout.uiElement(inheritor || this);
         self.type = 'stackPanel';
-        self.addProperty('orientation', { get: true, set: true, 'default': 'vertical', needsMeasure: true });
+        self.addProperty('orientation', {
+            get: true, set: true, 'default': 'vertical', needsMeasure: true,
+            validValues :['vertical', 'horizontal']
+        });
         self.addProperty('collapseInBetweenMargins', { get: true, set: true, 'default':true, needsMeasure:true });
         self.addCssProperty('background', false, undefined);
 
