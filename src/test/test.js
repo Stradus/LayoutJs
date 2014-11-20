@@ -9,63 +9,42 @@ var LayoutTest;
                 type: 'stack',
                 horizontalAlignment: 'left',
                 children: [{
-                    type: 'button',
-                    background: 'gray',
-                    horizontalAlignment: 'left',
-                    verticalAlignment: 'top',
-                    margin: 5,
+                    type: 'button',                   
                     click: function () { console.log('click') },
-                    pointerOverStyle: { background: 'green' },
-                    buttonDownStyle: { background: 'red' },
-                    disabledStyle: {background:'lightgray'},
-                    children: [{
-                        type: "text",
-                        text: "Button Text",
-                        margin: 5,
-                        horizontalAlignment: 'center',
-                        verticalAlignment: 'center',
-                        selectable: false
-                    },
-                    ]
+                    //children: [{
+                    //    type: "text",
+                    //    text: "Button Text",
+                    //    margin: 5,
+                    //    horizontalAlignment: 'center',
+                    //    verticalAlignment: 'center',
+                    //    selectable: false
+                    //},
+                    //]
                 }, {
-                    type: 'button',
-                    background: 'gray',
-                    horizontalAlignment: 'left',
-                    verticalAlignment: 'top',
-                    margin: 5,
+                    type: 'button',                   
                     isDisabled: true,
-                    click: function () { console.log('click') },
-                    pointerOverStyle: { background: 'green' },
-                    buttonDownStyle: { background: 'red' },
-                    disabledStyle: { background: 'lightgray' },
-                    children: [{
-                        type: "text",
-                        text: "Second Button",
-                        margin: 10,
-                        horizontalAlignment: 'center',
-                        verticalAlignment: 'center',
-                        selectable: true
-                    },
-                    ]
+                    click: function () { console.log('click') },                  
+                    //children: [{
+                    //    type: "text",
+                    //    text: "Second Button",
+                    //    margin: 10,
+                    //    horizontalAlignment: 'center',
+                    //    verticalAlignment: 'center',
+                    //    selectable: true
+                    //},
+                    //]
                 }, {
-                    type: 'button',
-                    background: 'gray',
-                    horizontalAlignment: 'left',
-                    verticalAlignment: 'top',
-                    margin: 5,
-                    click: function () { console.log('click') },
-                    pointerOverStyle: { background: 'green' },
-                    buttonDownStyle: { background: 'red' },
-                    disabledStyle: { background: 'lightgray' },
-                    children: [{
-                        type: "text",
-                        text: "Third Button",
-                        margin: 15,
-                        horizontalAlignment: 'center',
-                        verticalAlignment: 'center',
-                        selectable: true
-                    },
-                    ]
+                    type: 'button',   
+                    click: function () { console.log('click') },                  
+                    //children: [{
+                    //    type: "text",
+                    //    text: "Third Button",
+                    //    margin: 15,
+                    //    horizontalAlignment: 'center',
+                    //    verticalAlignment: 'center',
+                    //    selectable: true
+                    //},
+                    //]
                 }]
             }]
         };

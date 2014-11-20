@@ -8,6 +8,8 @@ var Layout;
             throw "uiElement is an abstract class, it needs to have a descendant to inherit from.";
         }
         var self = inheritor;
+        self.protected = {};
+        var logicalDescendant = self;
         var children = [];
         var parent;
         self.type = 'uiElement';
@@ -53,7 +55,6 @@ var Layout;
         self.addTriggeredEvent = function (name, trigger) {
             Layout.addTriggeredEvent(self, name, trigger);
         };
-
 
         var cssValues = {};
         var changedCssValues = {};
@@ -106,7 +107,70 @@ var Layout;
 
         self.addAttrProperty('id', false);
 
-        self.renderer = undefined;
+        self.addChild = function (child) {
+            return logicalDescendant.addVisualChild(child);
+        };
+
+        self.addVisualChild = function (child) {
+            if (!child) {
+                self.removeAllChildren();
+                return;
+            }
+            if (maxChildren === 0) {
+                throw "Element does not support children";
+            }
+            // Check that interface exists
+            if (!child.measureSelf) {
+                throw "Missing measure self function";
+            }
+            if (!child.arrangeSelf) {
+                throw "Missing arrange self function";
+            }
+            if (child.parent) {
+                child.parent.removeChild(child);
+            }
+            if (maxChildren === 1) {
+                if (children.length === 1) {
+                    children[0].parent.removeChild(children[0]);
+                }
+            }
+            children.push(child);
+            child.setParent(self);
+            self.needsMeasure = true;
+        }
+
+        self.removeChild = function (child) {
+            return logicalDescendant.removeVisualChild(child);
+        };
+        self.removeVisualChild = function (child) {
+            var childIndex = children.indexOf(child);
+            if (childIndex === -1) {
+                throw "Element was not removed since it was not a child";
+            }
+            children.splice(childIndex, 1);
+            //if (child.parent && child.html) {
+            //    child.html.parentElement.removeChild(child.html);
+            //}
+            removeHtml(child);
+            child.setParent(undefined);
+            child.html = undefined;
+            self.needsMeasure = true;
+        }
+
+        self.removeAllChildren = function () {
+            return logicalDescendant.removeAllVisualChildren();
+        };
+        self.removeAllVisualChildren = function () {
+            var oldChildren = children.slice();
+            for (var i = 0; i < oldChildren.length; i++) {
+                self.removeChild(oldChildren[i]);
+            }
+        }
+
+
+
+
+        //self.renderer = undefined;
         var needsMeasureInternal = true; // By default it needs work
         var needsArrangeInternal = true; // By default it needs work
         var needsRenderInternal = true;
@@ -145,10 +209,17 @@ var Layout;
 
         self.html = undefined;
 
-        Object.defineProperty(self, 'children', { get: function () { return children } });
+        Object.defineProperty(self, 'children', { get: function () { return logicalDescendant.visualChildren } });
+        Object.defineProperty(self, 'visualChildren', { get: function () { return children } });
         //self.addProperty('children', { get:true, 'default': children});
         //self.addProperty('child', { get: function () { if (children.length > 1) { throw "Element has multiple children" }; return children[0]; } });
         Object.defineProperty(self, 'child', {
+            get: function () { return logicalDescendant.visualChild },
+            set: function (child) {
+                logicalDescendant.visualChild = child;
+            }
+        })
+        Object.defineProperty(self, 'visualChild', {
             get: function () { return children.length > 0 ? children[0] : undefined },
             set: function (child) {
                 if (self.children.length === 1 && self.children[0] === child) {
@@ -239,7 +310,7 @@ var Layout;
             onChange: positiveThicknessChangeFunc,
             needsMeasure: true
         })
-
+        self.addCssProperty('boxShadow', false, '');
         self.addCssProperty('borderStyle', false, 'solid', ['dotted', 'dashed', 'solid', 'double', 'groove', 'ridge', 'inset', 'outset']);
         self.addCssProperty('borderColor', false, 'black');
         var zeroRadius = Object.freeze({topLeft:0, topRight:0, bottomRight:0, bottomLeft:0});
@@ -265,65 +336,59 @@ var Layout;
         self.addProperty('isPointerOver', { get: true, set: true, 'default': false });
         self.addProperty('isPointerDown', { get: true, set: true, 'default': false });
 
-        var removeHtml = function (child) {
-            if (child.html) {
-                child.html.parentElement.removeChild(child.html);
-                child.html = undefined;
+        self.isLogicalHost = true;
+        var setTemplate = function (template) {
+            self.removeAllVisualChildren();
+            if (!template) {
+                return;
+            };
+            var visualChild = Layout.create(template);
+            
+            self.addVisualChild(visualChild);
+        };
+        self.addProperty('template', {
+            get: true, set: true, onChange: function (v) {
+                setTemplate(v);
+                return v;
             }
-            for (var i = 0; i < child.children.length; i++) {
-                removeHtml(child.children[i]);
-            }
-        }
+        });
 
-        self.addChild = function (child) {
-            if (!child) {
-                self.removeAllChildren();
+       
+
+        self.protected.applyTheme = function () {
+            var style = Layout.getThemeStyleForElement(self);
+            if (!style) {
                 return;
             }
-            if (maxChildren === 0) {
-                throw "Element does not support children";
+            if (style.hasOwnProperty('template')) {
+                self.template = style.template;
             }
-            // Check that interface exists
-            if (!child.measureSelf) {
-                throw "Missing measure self function";
-            }
-            if (!child.arrangeSelf) {
-                throw "Missing arrange self function";
-            }
-            if (child.parent) {
-                child.parent.removeChild(child);
-            }
-            if (maxChildren === 1) {
-                if (children.length === 1) {
-                    children[0].parent.removeChild(children[0]);
+            for (var name in style) {
+                if (name === 'template') {
+                    // already done
+                    continue;
+                }
+                if (!self.hasOwnProperty(name)) {
+                    console.warn('Template tries to set non-existing property: ' + name);
+                    continue;
+                }
+                var oldValue = Layout.peekPropertyValue(self, name);
+                var newValue = style[name];
+                if (newValue !== oldValue) {
+                    //styleChanges[name] = oldValue; // Don't store style changes, we are setting the default style here!
+                    self[name] = newValue;
                 }
             }
-            children.push(child);
-            child.setParent(self);
-            self.needsMeasure = true;
-        }
-        self.removeChild = function (child) {
-            var childIndex = children.indexOf(child);
-            if (childIndex === -1) {
-                throw "Element was not removed since it was not a child";
-            }
-            children.splice(childIndex, 1);
-            //if (child.parent && child.html) {
-            //    child.html.parentElement.removeChild(child.html);
-            //}
-            removeHtml(child);
-            child.setParent(undefined);
-            child.html = undefined;
-            self.needsMeasure = true;
-        }
-        self.removeAllChildren = function () {
-            var oldChildren = children.slice();
-            for (var i = 0; i < oldChildren.length; i++) {
-                self.removeChild(oldChildren[i]);
-            }
-        }
+        };
 
-        self.protected = {};
+
+     
+
+
+        
+
+       
+        
         //self.protected.subtractThickness = function (border, size) {
         //    return {
         //        x: size.x + border.left,
@@ -431,12 +496,21 @@ var Layout;
         var lastDisplay;
         var lastBorder;
         var lastWasVisible = true;
+        var removeHtml = function (child) {
+            if (child.html) {
+                child.html.parentElement.removeChild(child.html);
+                child.html = undefined;
+            }
+            for (var i = 0; i < child.visualChildren.length; i++) {
+                removeHtml(child.visualChildren[i]);
+            }
+        }
         var hideHtml = function (element) {
             if (element.html) {
                 element.html.style.display = 'none';
             };
-            for (var i = 0; i < element.children.length; i++) {
-                hideHtml(element.children[i]);
+            for (var i = 0; i < element.visualChildren.length; i++) {
+                hideHtml(element.visualChildren[i]);
             }
         };
 
@@ -444,8 +518,8 @@ var Layout;
             if (element.html) {
                 element.html.style.display = 'block';
             };
-            for (var i = 0; i < element.children.length; i++) {
-                showHtml(element.children[i]);
+            for (var i = 0; i < element.visualChildren.length; i++) {
+                showHtml(element.visualChildren[i]);
             }
         };
 
@@ -482,15 +556,7 @@ var Layout;
                     //self.html.style.pointerEvents = 'none';
                     self.html.layoutElement = self;
 
-                    // Incorrect code anyway, but it is not very helpful, need to find 
-                    // specific solution for specific type of elements
-                    //// Remove event handling from children since events are fully centrally managed
-                    //// Since pointer events is hiearchical, only need to set one level
-                    //for (var i = 0; i < self.html.children.length; i++) {
-                    //    self.html.children[i].style.pointerEvents = 'none';
-                    //}
-
-
+                   
                     //for (var name in cssValues) {
                     //    self.html.style[name] = cssValues[name];
                     //}
@@ -531,8 +597,8 @@ var Layout;
                 self.renderSelf(self.renderSize);
             }
 
-            for (var i = 0; i < self.children.length; i++) {
-                var child = self.children[i];
+            for (var i = 0; i < children.length; i++) {
+                var child = children[i];
                 child.render(htmlParent, { x: self.renderSize.x + self.border.left, y: self.renderSize.y + self.border.top });
             }
         };
