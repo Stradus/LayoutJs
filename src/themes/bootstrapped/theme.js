@@ -30,7 +30,7 @@ var LayoutThemes;
                 margin: 10,
                 horizontalAlignment: 'center',
                 verticalAlignment: 'center',
-                templateBindings: ['text']                
+                hoistProperties: ['text']                
             }
         }
         ]

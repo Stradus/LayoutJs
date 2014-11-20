@@ -101,7 +101,8 @@ var Layout;
             if (lastWidth === undefined || lastText !== self.text || lastFont !== font) {
                 lastText = self.text;
                 measureCanvasContext.font = font;
-                var textMetrics = measureCanvasContext.measureText(lastText);
+                var measuredText = lastText ? lastText : '';// Otherwise we for example measure the length of the word undefined
+                var textMetrics = measureCanvasContext.measureText(measuredText);
                 lastWidth = textMetrics.width;
                 //if(lastHeight)
             }

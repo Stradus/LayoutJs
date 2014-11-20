@@ -4,11 +4,17 @@ var Layout;
     var recordAccess = false;
 
     var activeBindingProperty = undefined;
-    Layout.connectWithProperty = function (element, elementPropertyName, object, objectPropertyName) {
+    Layout.connectWithProperty = function (element, elementPropertyName, object, objectPropertyName, createObjectProperty) {
         var elementProperty = getProperty(element, elementPropertyName);
         if (!elementProperty) {
             throw "Element has no property: " + elementPropertyName;
         }
+        // Can be done nicer by integrating with code below, but now we did not have to change the code,
+        // Needs optimization later
+        if (createObjectProperty && !object.hasOwnProperty(objectPropertyName)) {
+            object[objectPropertyName] = undefined;
+        }
+        
         if (object.hasOwnProperty(objectPropertyName)) {
             var property = getProperty(object, objectPropertyName);
             if (!property) {

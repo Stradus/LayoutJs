@@ -342,7 +342,7 @@ var Layout;
             if (!template) {
                 return;
             };
-            var visualChild = Layout.create(template);
+            var visualChild = Layout.create(template, self);
             
             self.addVisualChild(visualChild);
         };
@@ -363,6 +363,7 @@ var Layout;
             if (style.hasOwnProperty('template')) {
                 self.template = style.template;
             }
+
             for (var name in style) {
                 if (name === 'template') {
                     // already done

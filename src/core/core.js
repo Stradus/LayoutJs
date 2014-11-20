@@ -1,8 +1,12 @@
 "use strict";
 var Layout;
 (function (Layout) {
-    Layout.create = function (definition) {
+    var templateHosts = [];
+    Layout.create = function (definition, templateHost) {
         try {
+            if (templateHost) {
+                templateHosts.push(templateHost);
+            }
             var element;
             // Create self
             if (typeof definition === 'string') {
@@ -11,15 +15,21 @@ var Layout;
             } else {
                 element = new Layout[definition.type]();
             }
+            
+
             // first apply template, and then the rest
             element.protected.applyTheme();
             for (var optionName in definition) {
-                if (optionName === 'type' || optionName === 'children') {
+                if (optionName === 'type' || optionName === 'children' || optionName === 'hoistProperties') {
                     continue;// skip those special meaning fields
                 }
                 element[optionName] = definition[optionName];
             }
-            
+            if (definition.hasOwnProperty('hoistProperties')) {
+                definition.hoistProperties.forEach(function (name) {
+                    Layout.connectWithProperty(element, name, templateHost, name, true);
+                });
+            }
             if (!definition.children) {
                 return element; // No children so we are done
             }
@@ -31,6 +41,8 @@ var Layout;
         catch (e) {
             console.log('Error while creating: ' + definition ? definition.type : undefined);
             throw e;
+        } finally {
+            templateHosts.pop(templateHost);
         }
         return element;
     }

@@ -11,6 +11,7 @@ var LayoutTest;
                 children: [{
                     type: 'button',                   
                     click: function () { console.log('click') },
+                    text: "Button Text"
                     //children: [{
                     //    type: "text",
                     //    text: "Button Text",
@@ -23,7 +24,8 @@ var LayoutTest;
                 }, {
                     type: 'button',                   
                     isDisabled: true,
-                    click: function () { console.log('click') },                  
+                    click: function () { console.log('click') },
+                    text: "Second Button"
                     //children: [{
                     //    type: "text",
                     //    text: "Second Button",
@@ -35,7 +37,8 @@ var LayoutTest;
                     //]
                 }, {
                     type: 'button',   
-                    click: function () { console.log('click') },                  
+                    click: function () { console.log('click') },
+                    text: "Third Button"
                     //children: [{
                     //    type: "text",
                     //    text: "Third Button",
