@@ -16,11 +16,15 @@ var Layout;
                 element = new Layout[definition.type]();
             }
             
+            if (templateHost && definition.isContentHost) {
+                templateHost.setLogicalDescendant(element);
+            };
 
             // first apply template, and then the rest
             element.protected.applyTheme();
             for (var optionName in definition) {
-                if (optionName === 'type' || optionName === 'children' || optionName === 'hoistProperties') {
+                if (optionName === 'type' || optionName === 'children' || optionName === 'hoistProperties' ||
+                    optionName === 'isContentHost') {
                     continue;// skip those special meaning fields
                 }
                 element[optionName] = definition[optionName];
@@ -174,6 +178,10 @@ var Layout;
             if (target) {
                 propagateUp(target, 'isPointerDown', true);
                 lastPointerDownElement = target;
+                // Prevent selection unless element is selectable
+                if (!target.isSelectable) {
+                    e.preventDefault();
+                }
             }
         });
 

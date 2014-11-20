@@ -5,7 +5,8 @@ var Layout;
     // It provideds all the basic support for layout, styling etc.
     Layout.uiElement = function (inheritor, maxChildren) {
         if (!inheritor) {
-            throw "uiElement is an abstract class, it needs to have a descendant to inherit from.";
+            log.warn( "uiElement is an abstract class, it needs to have a descendant to inherit from.");
+            self = this;
         }
         var self = inheritor;
         self.protected = {};
@@ -82,30 +83,31 @@ var Layout;
             });
         };
 
-        var attrValues = {};
-        //var changedAttrValues = {};
-        self.addAttrProperty = function (name, needsMeasure, defaultValue, validValues) {
-            var changeFunc = function (v) {
-                attrValues[name] = v;
-                if (self.html) {
-                    self.html[name] = v;
-                }
-                return v;
-            };
-            if (arguments.length > 2) {
-                changeFunc(defaultValue);
-            }
-            self.addProperty(name, {
-                needsMeasure: needsMeasure,
-                get: true,
-                set: true,
-                'default': defaultValue,
-                onChange: changeFunc,
-                validValues: validValues
-            });
-        };
+        //var attrValues = {};
+        ////var changedAttrValues = {};
+        //self.addAttrProperty = function (name, needsMeasure, defaultValue, validValues) {
+        //    var changeFunc = function (v) {
+        //        attrValues[name] = v;
+        //        if (self.html) {
+        //            self.html[name] = v;
+        //        }
+        //        return v;
+        //    };
+        //    if (arguments.length > 2) {
+        //        changeFunc(defaultValue);
+        //    }
+        //    self.addProperty(name, {
+        //        needsMeasure: needsMeasure,
+        //        get: true,
+        //        set: true,
+        //        'default': defaultValue,
+        //        onChange: changeFunc,
+        //        validValues: validValues
+        //    });
+        //};
 
-        self.addAttrProperty('id', false);
+        //self.addAttrProperty('id', false, null);
+
 
         self.addChild = function (child) {
             return logicalDescendant.addVisualChild(child);
@@ -167,6 +169,31 @@ var Layout;
             }
         }
 
+        Object.defineProperty(self, 'children', { get: function () { return logicalDescendant.visualChildren } });
+        Object.defineProperty(self, 'visualChildren', { get: function () { return children } });
+        Object.defineProperty(self.protected, 'activeChildren', {
+            get: function () { return children.filter(function (e) { return e.visible !== 'collapsed' }) }
+        });
+        //self.addProperty('children', { get:true, 'default': children});
+        //self.addProperty('child', { get: function () { if (children.length > 1) { throw "Element has multiple children" }; return children[0]; } });
+        Object.defineProperty(self, 'child', {
+            get: function () { return logicalDescendant.visualChild },
+            set: function (child) {
+                logicalDescendant.visualChild = child;
+            }
+        })
+        Object.defineProperty(self, 'visualChild', {
+            get: function () { return children.length > 0 ? children[0] : undefined },
+            set: function (child) {
+                if (children.length === 1 && children[0] === child) {
+                    // nothing to change
+                    return;
+                }
+                self.removeAllVisualChildren();
+                self.addVisualChild(child);
+            }
+        })
+
 
 
 
@@ -209,27 +236,7 @@ var Layout;
 
         self.html = undefined;
 
-        Object.defineProperty(self, 'children', { get: function () { return logicalDescendant.visualChildren } });
-        Object.defineProperty(self, 'visualChildren', { get: function () { return children } });
-        //self.addProperty('children', { get:true, 'default': children});
-        //self.addProperty('child', { get: function () { if (children.length > 1) { throw "Element has multiple children" }; return children[0]; } });
-        Object.defineProperty(self, 'child', {
-            get: function () { return logicalDescendant.visualChild },
-            set: function (child) {
-                logicalDescendant.visualChild = child;
-            }
-        })
-        Object.defineProperty(self, 'visualChild', {
-            get: function () { return children.length > 0 ? children[0] : undefined },
-            set: function (child) {
-                if (self.children.length === 1 && self.children[0] === child) {
-                    // nothing to change
-                    return;
-                }
-                self.removeAllChildren();
-                self.addChild(child);
-            }
-        })
+       
 
         var styleChanges = {};
         var activeStyleName = 'default';
@@ -336,8 +343,12 @@ var Layout;
 
         self.addProperty('isPointerOver', { get: true, set: true, 'default': false });
         self.addProperty('isPointerDown', { get: true, set: true, 'default': false });
+        
 
-        self.isLogicalHost = true;
+        //self.isLogicalHost = true;
+        self.protected.setLogicalDescendant = function(element){
+            logicalDescendant = element;
+        };
         var setTemplate = function (template) {
             self.removeAllVisualChildren();
             if (!template) {
@@ -558,13 +569,13 @@ var Layout;
                     //self.html.style.pointerEvents = 'none';
                     self.html.layoutElement = self;
 
-                   
+                    //// Removed since only changed values should be set 
                     //for (var name in cssValues) {
                     //    self.html.style[name] = cssValues[name];
                     //}
-                    for (var name in attrValues) {
-                        self.html[name] = attrValues[name];
-                    }
+                    //for (var name in attrValues) {
+                    //    self.html[name] = attrValues[name];
+                    //}
                 }
             }
             if (self.html) {

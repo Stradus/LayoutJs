@@ -73,11 +73,11 @@ var Layout;
 
         var render = function () {
             var start = window.performance.now();
-            if (self.children.length < 1) {
+            if (self.visualChildren.length < 1) {
                 // No children so nothing to render
                 return;
             }
-            var child = self.child;
+            var child = self.visualChild;
             if (measureScheduled) {
                 child.measure(rootRect);
                 measureScheduled = false;

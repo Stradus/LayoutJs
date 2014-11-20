@@ -80,7 +80,7 @@ var Layout;
         self.addCssProperty('color', false, undefined);
         self.addCssProperty('fontSize', true, '12px');
         self.addCssProperty('fontFamily', true, 'sans-serif');
-        self.addProperty('selectable', { needsRender: true, get: true, set: true, 'default': true });
+        self.addProperty('selectable', {needsRender:true, get: true, set: true, 'default': true });
         self.addProperty('horizontalContentAlignment', {
             needsRender: true, get: true, set: true, 'default': 'left',
             validValues: ['left', 'center', 'right', 'stretch']
@@ -138,19 +138,30 @@ var Layout;
                 textSpan.textContent = self.text;
                 lastRenderText = self.text;
             }
+
+            //// Now handles in mouse down event
+            //// by preventing default action
             if (lastRenderSelectable !== self.selectable) {
                 lastRenderSelectable = self.selectable;
                 if (!lastRenderSelectable) {
-                    textSpan.style.userSelect = 'none';
-                    textSpan.style.mozUserSelect = 'none';
-                    textSpan.style.webkitUserSelect = 'none';
-                    textSpan.style.msUserSelect = 'none';
+            //        self.html.style.userSelect = 'none';
+            //        self.html.style.mozUserSelect = 'none';
+            //        self.html.style.webkitUserSelect = 'none';
+            //        self.html.style.msUserSelect = 'none';
+            //        textSpan.style.userSelect = 'none';
+            //        textSpan.style.mozUserSelect = 'none';
+            //        textSpan.style.webkitUserSelect = 'none';
+            //        textSpan.style.msUserSelect = 'none';
                     textSpan.style.cursor = 'default';
                 } else {
-                    textSpan.style.userSelect = 'text';
-                    textSpan.style.mozUserSelect = 'text';
-                    textSpan.style.webkitUserSelect = 'text';
-                    textSpan.style.msUserSelect = 'text';
+            //        self.html.style.userSelect = 'text';
+            //        self.html.style.mozUserSelect = 'text';
+            //        self.html.style.webkitUserSelect = 'text';
+            //        self.html.style.msUserSelect = 'text';
+            //        textSpan.style.userSelect = 'text';
+            //        textSpan.style.mozUserSelect = 'text';
+            //        textSpan.style.webkitUserSelect = 'text';
+            //        textSpan.style.msUserSelect = 'text';
                     textSpan.style.cursor = undefined;
                 }
             }

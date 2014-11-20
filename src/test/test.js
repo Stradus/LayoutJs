@@ -8,6 +8,7 @@ var LayoutTest;
             children: [{
                 type: 'stack',
                 horizontalAlignment: 'left',
+                orientation: 'horizontal',
                 children: [{
                     type: 'button',                   
                     click: function () { console.log('click') },
