@@ -67,7 +67,15 @@ var Layout;
             desiredSize.height += self.padding.top + self.padding.bottom;
             return desiredSize;// To use with scrolling etc. { width: Math.min(desiredSize.width, availableSize.width), height: Math.min(desiredSize.height, availableSize.height) };
         };
-
+        var getActualCornerRadius = function(child){
+            child.actualCornerRadius = child.actualCornerRadius || {
+                topLeft: child.cornerRadius.topLeft,
+                topRight: child.cornerRadius.topRight,
+                bottomRight: child.cornerRadius.bottomRight,
+                bottomLeft:child.cornerRadius.bottomLeft
+            };
+            return child.actualCornerRadius;
+        }
         self.arrangeSelf = function (finalSize) {
             var offset = 0;
             var collapseMargins = self.collapseInBetweenMargins;
@@ -79,6 +87,7 @@ var Layout;
             var firstRadius2 = undefined;
             for (var i = 0; i < self.protected.activeChildren.length; i++) {
                 var child = self.protected.activeChildren[i];
+                child.actualCornerRadius = undefined;
                 if (self.orientation === 'vertical') {
                     if (collapseMargins && firstMargin !== undefined) {
                         offset -= Math.min(child.margin.top, firstMargin);
@@ -95,16 +104,24 @@ var Layout;
                         width: Math.max(finalSize.width - self.padding.left - self.padding.right, child.desiredSize.width),
                         height: child.desiredSize.height
                     });
-                    //if (collapseRadius && firstRadius1 != undefined) {
-                    //    if (firstRadius1p === child.cornerRadius.topleft ||
-                    //        firstRadius2p === child.cornerRadius.topright) {
-                    //        child.renderCornerRadius = 
-                    //    }
-                    //}
-                    firstRadius1 = child.cornerRadius.bottomleft;
-                    firstRadius1p = child.actualSize.x;
-                    firstRadius2 = child.cornerRadius.bottomright;
-                    firstRadius2p = child.actualSize.x + child.actualSize.width;
+                    if (collapseRadius && prevChild) {
+                        if(prevChild.margin.bottom === 0 && child.margin.top ===0){
+                            if (prevChild.actualSize.x === child.actualSize.x ||
+                                prevChild.actualSize.x +prevChild.actualSize.width === child.actualSize.x +child.actualSize.width) {
+                                var prevRad = getActualCornerRadius(prevChild);
+                                var rad = getActualCornerRadius(child);
+                                if (prevChild.actualSize.x === child.actualSize.x) {
+                                    prevRad.bottomLeft = 0;
+                                    rad.topLeft = 0;
+                                }
+                                if (prevChild.actualSize.x + prevChild.actualSize.width === child.actualSize.x + child.actualSize.width) {
+                                    prevRad.bottomRight = 0;
+                                    rad.topRight = 0;
+                                }
+                            }
+                        }
+                    }
+                    var prevChild = child;
                     offset += child.desiredSize.height;
                 } else {
                     if (collapseMargins && firstMargin !== undefined) {
@@ -122,7 +139,25 @@ var Layout;
                         width: child.desiredSize.width,
                         height: Math.max(finalSize.height - self.padding.top - self.padding.bottom, child.desiredSize.height)
                     });
-
+                    if (collapseRadius && prevChild) {
+                        if (prevChild.margin.left === 0 && child.margin.right === 0) {
+                            if (prevChild.actualSize.y === child.actualSize.y ||
+                                prevChild.actualSize.y + prevChild.actualSize.height === child.actualSize.y + child.actualSize.height) {
+                                var prevRad = getActualCornerRadius(prevChild);
+                                var rad = getActualCornerRadius(child);
+                                if (prevChild.actualSize.y === child.actualSize.y) {
+                                    prevRad.topRight = 0;
+                                    rad.topLeft = 0;
+                                }
+                                if (prevChild.actualSize.y + prevChild.actualSize.height === child.actualSize.y + child.actualSize.height) {
+                                    prevRad.bottomRight = 0;
+                                    rad.bottomLeft = 0;
+                                }
+                            }
+                        }
+                    }
+                    var prevChild = child;
+                    prevChild = child;
                     offset += child.desiredSize.width;
                 }
             }

@@ -7,8 +7,9 @@ var LayoutTest;
             type: 'host',
             children: [{
                 type: 'stack',
-                horizontalAlignment: 'left',
-                orientation: 'horizontal',
+                horizontalAlignment: 'center',
+                verticalAlignment: 'center',
+                orientation: 'vertical',
                 children: [{
                     type: 'button',                   
                     click: function () { console.log('click') },

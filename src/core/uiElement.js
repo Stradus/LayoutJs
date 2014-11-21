@@ -325,6 +325,7 @@ var Layout;
         self.addProperty('cornerRadius', {
             get: true,
             set: true,
+            needsArrange: true,
             onChange: function (v) {
                 var radius;
                 if (typeof v === 'number') {
@@ -333,8 +334,9 @@ var Layout;
                     radius = { topLeft: v.topLeft || 0, topRight: v.topRight || 0, 
                         bottomRight: v.bottomRight || 0, bottomLeft: v.bottomLeft || 0 };
                 }
-                changeCssValue('borderRadius', radius.topLeft + 'px ' + radius.topRight + 'px '
-                    + radius.bottomRight + 'px ' + radius.bottomLeft + 'px');
+                //// Now movde to renderer, since it might be changed by organizers
+                //changeCssValue('borderRadius', radius.topLeft + 'px ' + radius.topRight + 'px '
+                //    + radius.bottomRight + 'px ' + radius.bottomLeft + 'px');
                 return Object.freeze(radius);
             },
             'default':zeroRadius
@@ -508,6 +510,7 @@ var Layout;
         var lastRenderSize = { x: undefined, y: undefined, width: undefined, height: undefined };
         var lastDisplay;
         var lastBorder;
+        var lastRadius;
         var lastWasVisible = true;
         var removeHtml = function (child) {
             if (child.html) {
@@ -592,6 +595,16 @@ var Layout;
                         self.border.right + 'px ' +
                         self.border.bottom + 'px ' +
                         self.border.left + 'px';
+                }
+                var radius = self.actualCornerRadius||self.cornerRadius;
+                if(lastRadius !==radius && (!lastRadius ||
+                    radius.topLeft!==lastRadius.topLeft ||  
+                    radius.topRight !== lastRadius.topRight||
+                    radius.bottomRight !== lastRadius.bottomRight ||
+                    radius.bottomLeft !== lastRadius.bottomLeft)) {
+                    html.style.borderRadius = radius.topLeft + 'px ' + radius.topRight + 'px '
+                        + radius.bottomRight + 'px ' + radius.bottomLeft + 'px';
+                    lastRadius = radius;
                 }
 
                 if (lastHtmlParent !== htmlParent) {

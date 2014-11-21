@@ -10,9 +10,9 @@ var LayoutThemes;
             border: 1,
             borderColor: '#ccc',
             cornerRadius: 4,
-            margin: 5,
-            horizontalAlignment: 'left',
-            verticalAlignment: 'top',
+            margin: 0,
+            horizontalAlignment: 'stretch',
+            verticalAlignment: 'stretch',
             pointerOverStyle:{
                 background: '#e6e6e6',
                 borderColor: '#adadad'
