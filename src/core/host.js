@@ -29,7 +29,7 @@ var Layout;
                     requestAnimationFrame();
                 }
             }
-        })
+        });
 
         Object.defineProperty(self, 'needsArrange', {
             get: function () { return arrangeScheduled; },
@@ -39,7 +39,7 @@ var Layout;
                     requestAnimationFrame();
                 }
             }
-        })
+        });
 
         Object.defineProperty(self, 'needsRender', {
             get: function () { return renderScheduled; },
@@ -49,7 +49,28 @@ var Layout;
                     requestAnimationFrame();
                 }
             }
-        })
+        });
+        var resizeHandler = function(){
+            rootRect =  { x: 0, y: 0, width: window.innerWidth, height: window.innerHeight };
+            self.needsMeasure = true;
+        };
+        var resizeState = undefined;
+        self.addProperty('rerenderOnResize', {
+            get: true,
+            set: true,
+            onChange: function (v) {
+                if (v != resizeState) {
+                    resizeState = v;
+                    if (resizeState) {
+                        window.addEventListener('resize', resizeHandler);
+                    } else {
+                        window.removeEventListener('resize', resizeHandler);
+                    }
+                }
+                return v;
+            },
+            'default':true
+        });
 
         hostHtmlElement.position = 'absolute';
         hostHtmlElement.display = 'block';
@@ -78,23 +99,28 @@ var Layout;
                 return;
             }
             var child = self.visualChild;
+            var hasMeasured, hasArranged, hasRendered;
             if (measureScheduled) {
                 child.measure(rootRect);
                 measureScheduled = false;
                 arrangeScheduled = true;
+                hasMeasured = true;
             }
             if (arrangeScheduled) {
                 child.arrange({ x: 0, y: 0, width: rootRect.width, height: rootRect.height });
                 arrangeScheduled = false;
                 renderScheduled = true;
+                hasArranged = true;
             }
             if (renderScheduled) {
                 child.render(hostHtmlElement);
                 renderScheduled = false;
+                hasRendered = true;
             }
             // To allow new scheduling
             requestAnimationFrameID = undefined;
-            console.log('Rendered in: ' + (window.performance.now() - start));
+            console.log('Rendered in: ' + (window.performance.now() - start)
+                + '(' +(hasMeasured?'measured,':'') +(hasArranged?'arranged,':'') + (hasRendered?'rendered':'') +')');
         };
 
         // Should always remain last call

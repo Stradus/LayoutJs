@@ -18,7 +18,7 @@ var Layout;
                 self.child.measure(self.protected.subtractPadding(availableSize));
                 return self.protected.addPadding(self.child.desiredSize);
             } else {
-                return { width: self.padding.width, height: self.padding.height };
+                return { width: self.padding.totalWidth, height: self.padding.totalHeight };
             }
         }
         self.arrangeSelf = function (finalSize) {
@@ -30,7 +30,7 @@ var Layout;
                 //var selfSize = self.protected.addBorder(self.padding, self.child.actualSize);                
                 return finalSize;
             } else {
-                return { x: 0, y: 0, width: Math.min(self.padding.width, finalSize.width), height: Math.min(self.padding.height, finalSize.height) };
+                return finalSize;// { x: 0, y: 0, width: Math.min(self.padding.totalWidth, finalSize.width), height: Math.min(self.padding.totalHeight, finalSize.height) };
             }
         }
         return self;

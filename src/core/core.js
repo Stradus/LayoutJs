@@ -179,7 +179,7 @@ var Layout;
                 propagateUp(target, 'isPointerDown', true);
                 lastPointerDownElement = target;
                 // Prevent selection unless element is selectable
-                if (!target.isSelectable) {
+                if (!target.selectable) {
                     e.preventDefault();
                 }
             }

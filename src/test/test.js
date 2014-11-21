@@ -6,50 +6,91 @@ var LayoutTest;
         var definition = {
             type: 'host',
             children: [{
-                type: 'stack',
-                horizontalAlignment: 'center',
-                verticalAlignment: 'center',
-                orientation: 'vertical',
+                type: 'contentHost',
+                horizontalAlignment: 'stretch',
+                verticalAlignment: 'stretch',
                 children: [{
-                    type: 'button',                   
-                    click: function () { console.log('click') },
-                    text: "Button Text"
-                    //children: [{
-                    //    type: "text",
-                    //    text: "Button Text",
-                    //    margin: 5,
-                    //    horizontalAlignment: 'center',
-                    //    verticalAlignment: 'center',
-                    //    selectable: false
-                    //},
-                    //]
-                }, {
-                    type: 'button',                   
-                    isDisabled: true,
-                    click: function () { console.log('click') },
-                    text: "Second Button"
-                    //children: [{
-                    //    type: "text",
-                    //    text: "Second Button",
-                    //    margin: 10,
-                    //    horizontalAlignment: 'center',
-                    //    verticalAlignment: 'center',
-                    //    selectable: true
-                    //},
-                    //]
-                }, {
-                    type: 'button',   
-                    click: function () { console.log('click') },
-                    text: "Third Button"
-                    //children: [{
-                    //    type: "text",
-                    //    text: "Third Button",
-                    //    margin: 15,
-                    //    horizontalAlignment: 'center',
-                    //    verticalAlignment: 'center',
-                    //    selectable: true
-                    //},
-                    //]
+                    type: 'stack',
+                    horizontalAlignment: 'center',
+                    verticalAlignment: 'center',
+                    orientation: 'vertical',
+                    children: [{
+                        type: 'button',                   
+                        click: function () { console.log('click') },
+                        text: "Button Text"
+                        //children: [{
+                        //    type: "text",
+                        //    text: "Button Text",
+                        //    margin: 5,
+                        //    horizontalAlignment: 'center',
+                        //    verticalAlignment: 'center',
+                        //    selectable: false
+                        //},
+                        //]
+                    }, {
+                        type: 'button',                   
+                        isDisabled: true,
+                        click: function () { console.log('click') },
+                        text: "Second Button"
+                        //children: [{
+                        //    type: "text",
+                        //    text: "Second Button",
+                        //    margin: 10,
+                        //    horizontalAlignment: 'center',
+                        //    verticalAlignment: 'center',
+                        //    selectable: true
+                        //},
+                        //]
+                    }, {
+                        type: 'button',   
+                        click: function () { console.log('click') },
+                        text: "Third Button"
+                        //children: [{
+                        //    type: "text",
+                        //    text: "Third Button",
+                        //    margin: 15,
+                        //    horizontalAlignment: 'center',
+                        //    verticalAlignment: 'center',
+                        //    selectable: true
+                        //},
+                        //]
+                    }, {
+                        type: 'button',
+                        click: function () { console.log('click') },
+                        text: "Fourth Button",
+                        
+                        //children: [{
+                        //    type: "text",
+                        //    text: "Third Button",
+                        //    margin: 15,
+                        //    horizontalAlignment: 'center',
+                        //    verticalAlignment: 'center',
+                        //    selectable: true
+                        //},
+                        //]
+                    }
+                    , {
+                        type: 'split',
+                        orientation: 'horizontal',                        
+                        background: 'gray',
+                        cornerRadius: 4,
+                        border:1,
+                        children: [
+                            {
+                                type: 'contentHost',
+                                background: 'green',
+                                padding:5,
+                                horizontalAlignment: 'stretch'
+                            },
+                            {
+                                type: 'contentHost',
+                                background: 'red',
+                                padding:5,
+                                horizontalAlignment: 'stretch'
+                            },
+                        ]
+                    }
+                    ]
                 }]
             }]
         };
