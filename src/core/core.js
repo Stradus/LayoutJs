@@ -15,7 +15,7 @@ var Layout;
             } else {
                 element = new Layout[definition.type]();
             }
-            
+
             if (templateHost && definition.isContentHost) {
                 templateHost.setLogicalDescendant(element);
             };
@@ -23,7 +23,8 @@ var Layout;
             // first apply template, and then the rest
             element.protected.applyTheme();
             for (var optionName in definition) {
-                if (optionName === 'type' || optionName === 'children' || optionName === 'hoistProperties' ||
+                if (optionName === 'type' || optionName === 'children' || optionName === 'child'
+                    || optionName === 'hoistProperties' ||
                     optionName === 'isContentHost') {
                     continue;// skip those special meaning fields
                 }
@@ -34,12 +35,18 @@ var Layout;
                     Layout.connectWithProperty(element, name, templateHost, name, true);
                 });
             }
-            if (!definition.children) {
+            if (definition.hasOwnProperty('child') &&
+                definition.hasOwnProperty('children')) {
+                throw "Element can not be defined with both child and children property."
+            }
+
+            var children = definition.children ||(definition.child? [definition.child]:undefined);
+            if (!children) {
                 return element; // No children so we are done
             }
             // Create children
-            for (var i = 0; i < definition.children.length; i++) {
-                element.addChild(Layout.create(definition.children[i]));
+            for (var i = 0; i < children.length; i++) {
+                element.addChild(Layout.create(children[i]));
             }
         }
         catch (e) {
@@ -53,10 +60,10 @@ var Layout;
     Layout.performance = {
         checkValidPropertyValues: true
     };
-    var initializeThemes = function () {        
+    var initializeThemes = function () {
         Layout.addProperty(Layout, 'theme', {
             'default': tempTheme,
-            get:true,set:true,
+            get: true, set: true,
             onChange: function (v) {
                 if (typeof v === 'string') {
                     // Try to resolve theme name, (Can add extensible resolving of themes later if use case arises)
@@ -66,7 +73,7 @@ var Layout;
                     cleanResources();
                     addStylesToResources(LayoutThemes[v].styles);
                     return LayoutThemes[v];
-                     
+
                 }
                 return v;
             }
@@ -74,11 +81,11 @@ var Layout;
     }
 
     // Temporary theme property, before initialization of LayoutJS, makes it possible to call it first
-    var tempTheme= 'bootstrapped';
+    var tempTheme = 'bootstrapped';
     Object.defineProperty(Layout, 'theme', {
-        get: function () { Layout.initialize(); return tempTheme;},
-        set: function (v) { tempTheme = v; Layout.initialize(); }, configurable:true
-    });    
+        get: function () { Layout.initialize(); return tempTheme; },
+        set: function (v) { tempTheme = v; Layout.initialize(); }, configurable: true
+    });
 
     var resources;
     var cleanResources = function () {
@@ -96,7 +103,7 @@ var Layout;
         styles.forEach(addStyleToResources);
     };
     var addStyleToResources = function (style) {
-        if (style.hasOwnProperty( 'targetType')) {
+        if (style.hasOwnProperty('targetType')) {
             var desc = Object.getOwnPropertyDescriptor(style, 'targetType');
             if (desc.configurable) {
                 desc.enumerable = false;
@@ -125,7 +132,7 @@ var Layout;
         }
         cleanResources();
         initializeThemes();
-        createWindowEventHandler();
+        //createWindowEventHandler();
 
         isInitialized = true;
         return;
@@ -133,8 +140,12 @@ var Layout;
 
 
 
-    var windowEventHandlerCreated = false;
-    var createWindowEventHandler = function () {
+    var elementsWithEventHandlers = new WeakMap();
+    Layout.initializeEventHandling = function (hostHtmlElement) {
+        if (elementsWithEventHandlers.has(hostHtmlElement)) {
+            console.log('evenet handlers where alredy created for the host element');
+            return;
+        }
         var propagateUp = function (element, propName, value, stopper) {
             do {
                 element[propName] = value;
@@ -152,7 +163,7 @@ var Layout;
         }
 
         var lastMouseOverElement = undefined;
-        window.addEventListener('mouseover', function (e) {
+        var mouseOverFunc = function (e) {
             var target = getLayoutElementParent(e.target);
             if (lastMouseOverElement != target && lastMouseOverElement) {
                 propagateUp(lastMouseOverElement, 'isPointerOver', false, target);
@@ -166,9 +177,10 @@ var Layout;
                 lastMouseOverElement = undefined;
                 //console.log('Unmanaged HTML element');
             }
-        });
+        };
+        hostHtmlElement.addEventListener('mouseover', mouseOverFunc);
         var lastPointerDownElement = undefined;
-        window.addEventListener('mousedown', function (e) {
+        hostHtmlElement.addEventListener('mousedown', function (e) {
             var target = getLayoutElementParent(e.target);
             if (lastPointerDownElement) {
                 propagateUp(target, 'isPointerDown', false);
@@ -185,7 +197,11 @@ var Layout;
             }
         });
 
-        window.addEventListener('mouseup', function (e) {
+        // Needed when host element is not root in the document
+        hostHtmlElement.addEventListener('mouseleave', mouseOverFunc);
+
+
+        hostHtmlElement.addEventListener('mouseup', function (e) {
             var target = getLayoutElementParent(e.target);
             if (lastPointerDownElement) {
                 propagateUp(lastPointerDownElement, 'isPointerDown', false);
@@ -193,12 +209,12 @@ var Layout;
             }
         });
 
-        window.addEventListener('dragstart', function (e) {
+        hostHtmlElement.addEventListener('dragstart', function (e) {
             e.preventDefault();
             return false;
         });
 
-
-        windowEventHandlerCreated = true;
+        // Only add now, since an error might have occured earlier
+        elementsWithEventHandlers.set(hostHtmlElement, true);
     };
 })(Layout || (Layout = {}));

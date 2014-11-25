@@ -2,21 +2,12 @@
 var Layout;
 (function (Layout) {
     Layout.host = function (inheritor) {
-        var hostHtmlElement; // Todo make properties of this
-        var tootRect; // Todo make properties of this
+        var hostHtmlElement; 
+        var rootRect; 
 
         var self = Layout.uiElement(inheritor || this, 1);
-        //createWindowEventHandler();
         Layout.initialize();
         self.type = 'host';
-        //self.horizontalAlignment = 'left';
-        //self.verticalAlignment = 'top';
-        if (!hostHtmlElement) {
-            hostHtmlElement = document.body;
-            if (!rootRect) {
-                rootRect = { x: 0, y: 0, width: window.innerWidth, height: window.innerHeight };
-            }
-        }
 
         var measureScheduled = true;
         var arrangeScheduled = true;
@@ -50,8 +41,8 @@ var Layout;
                 }
             }
         });
-        var resizeHandler = function(){
-            rootRect =  { x: 0, y: 0, width: window.innerWidth, height: window.innerHeight };
+        var resizeHandler = function () {
+            rootRect = { x: 0, y: 0, width: window.innerWidth, height: window.innerHeight };
             self.needsMeasure = true;
         };
         var resizeState = undefined;
@@ -69,28 +60,8 @@ var Layout;
                 }
                 return v;
             },
-            'default':true
+            'default': true
         });
-
-        hostHtmlElement.position = 'absolute';
-        hostHtmlElement.display = 'block';
-        hostHtmlElement.width = '100%';
-        hostHtmlElement.height = '100%';
-        hostHtmlElement.margin = '0px';
-        if (!rootRect) {
-            var rootRect = hostHtmlElement.getClientBoundingRect();
-        }
-        rootRect.width = rootRect.width === 0 ? Infinity : rootRect.width;
-        rootRect.height = rootRect.height === 0 ? Infinity : rootRect.height;
-        rootRect.x = rootRect.x || 0;
-        rootRect.y = rootRect.y || 0;
-
-        var requestAnimationFrameID = undefined;
-        var requestAnimationFrame = function () {
-            if (!requestAnimationFrameID) {
-                requestAnimationFrameID = window.requestAnimationFrame(render);
-            }
-        };
 
         var render = function () {
             var start = window.performance.now();
@@ -98,6 +69,12 @@ var Layout;
                 // No children so nothing to render
                 return;
             }
+
+            if (currentHostElementId !== self.hostElementId) {
+                setHostElement();
+                currentHostElementId = self.hostElementId;
+            }
+
             var child = self.visualChild;
             var hasMeasured, hasArranged, hasRendered;
             if (measureScheduled) {
@@ -120,8 +97,49 @@ var Layout;
             // To allow new scheduling
             requestAnimationFrameID = undefined;
             console.log('Rendered in: ' + (window.performance.now() - start)
-                + '(' +(hasMeasured?'measured,':'') +(hasArranged?'arranged,':'') + (hasRendered?'rendered':'') +')');
+                + '(' + (hasMeasured ? 'measured,' : '') + (hasArranged ? 'arranged,' : '') + (hasRendered ? 'rendered' : '') + ')');
         };
+        var requestAnimationFrameID = undefined;
+        var requestAnimationFrame = function () {
+            if (!requestAnimationFrameID) {
+                requestAnimationFrameID = window.requestAnimationFrame(render);
+            }
+        };
+
+        var currentHostElementId = null;
+
+
+
+        var setHostElement = function () {
+            if (!self.hostElementId) {
+                hostHtmlElement = document.body;
+                if (!rootRect) {
+                    rootRect = { x: 0, y: 0, width: window.innerWidth, height: window.innerHeight };
+                }
+            } else {
+                hostHtmlElement = window.document.getElementById(self.hostElementId);
+            }
+            hostHtmlElement.position = 'absolute';
+            hostHtmlElement.display = 'block';
+            hostHtmlElement.width = '100%';
+            hostHtmlElement.height = '100%';
+            hostHtmlElement.margin = '0px';
+            if (!rootRect) {
+                rootRect = hostHtmlElement.getBoundingClientRect();
+            }
+            rootRect.width = rootRect.width === 0 ? Infinity : rootRect.width;
+            rootRect.height = rootRect.height === 0 ? Infinity : rootRect.height;
+            rootRect.x = rootRect.x || 0;
+            rootRect.y = rootRect.y || 0;
+            Layout.initializeEventHandling(hostHtmlElement);
+        }
+
+        // Last property sinceit might trigger a render and everything should be initialized
+        self.addProperty('hostElementId', {
+            get: true,
+            set: true,
+            needsMeasure: true
+        });
 
         // Should always remain last call
         requestAnimationFrame();// To force initial render

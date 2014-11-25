@@ -25,7 +25,7 @@ var Layout;
             if (self.child) {
                 var childSize = self.protected.subtractPadding(finalSize);
                 childSize.x = self.padding.left;
-                childSize.y = self.padding.right;
+                childSize.y = self.padding.top;
                 self.child.arrange(childSize);
                 //var selfSize = self.protected.addBorder(self.padding, self.child.actualSize);                
                 return finalSize;

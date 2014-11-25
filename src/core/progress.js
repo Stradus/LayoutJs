@@ -18,6 +18,4 @@ var Layout;
             return state;
         });
     }
-
-
 })(Layout || (Layout = {}));
