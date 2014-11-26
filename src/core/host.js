@@ -45,20 +45,20 @@ var Layout;
             rootRect = { x: 0, y: 0, width: window.innerWidth, height: window.innerHeight };
             self.needsMeasure = true;
         };
-        var resizeState = undefined;
+        //var resizeState = undefined;
         self.addProperty('rerenderOnResize', {
             get: true,
             set: true,
-            onChange: function (v) {
-                if (v != resizeState) {
-                    resizeState = v;
-                    if (resizeState) {
+            changed: function (resize) {
+                //if (v != resizeState) {
+                  //  resizeState = v;
+                    if (resize) {
                         window.addEventListener('resize', resizeHandler);
                     } else {
                         window.removeEventListener('resize', resizeHandler);
                     }
-                }
-                return v;
+                //}
+                //return v;
             },
             'default': true
         });

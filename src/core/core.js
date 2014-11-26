@@ -28,7 +28,14 @@ var Layout;
                     optionName === 'isContentHost') {
                     continue;// skip those special meaning fields
                 }
-                element[optionName] = definition[optionName];
+                // detect bindings (bindings start iwth word 'bind' e.g. bindHorizontalAlignment
+                if (optionName.length > 4 && optionName.lastIndexOf('bind')===0) {
+                    var propertyName = optionName[4].toLowerCase() + optionName.slice(5);
+                    Layout.dataBind(element, propertyName, definition[optionName]);
+                }
+                else {
+                    element[optionName] = definition[optionName];
+                }
             }
             if (definition.hasOwnProperty('hoistProperties')) {
                 definition.hoistProperties.forEach(function (name) {
@@ -49,10 +56,11 @@ var Layout;
                 element.addChild(Layout.create(children[i]));
             }
         }
-        catch (e) {
-            console.log('Error while creating: ' + definition ? definition.type : undefined);
-            throw e;
-        } finally {
+        //catch (e) {
+        //    console.log('Error while creating: ' + definition ? definition.type : undefined);
+        //    throw e;
+        //}
+        finally {
             templateHosts.pop(templateHost);
         }
         return element;
@@ -64,7 +72,7 @@ var Layout;
         Layout.addProperty(Layout, 'theme', {
             'default': tempTheme,
             get: true, set: true,
-            onChange: function (v) {
+            filter: function (v) {
                 if (typeof v === 'string') {
                     // Try to resolve theme name, (Can add extensible resolving of themes later if use case arises)
                     if (!LayoutThemes.hasOwnProperty(v)) {
@@ -217,4 +225,6 @@ var Layout;
         // Only add now, since an error might have occured earlier
         elementsWithEventHandlers.set(hostHtmlElement, true);
     };
+
+    
 })(Layout || (Layout = {}));

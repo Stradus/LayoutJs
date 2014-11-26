@@ -18,56 +18,19 @@ var LayoutTest;
                         type: 'button',                   
                         click: function () { console.log('click') },
                         text: "Button Text"
-                        //children: [{
-                        //    type: "text",
-                        //    text: "Button Text",
-                        //    margin: 5,
-                        //    horizontalAlignment: 'center',
-                        //    verticalAlignment: 'center',
-                        //    selectable: false
-                        //},
-                        //]
                     }, {
                         type: 'button',                   
                         isDisabled: true,
                         click: function () { console.log('click') },
-                        text: "Second Button"
-                        //children: [{
-                        //    type: "text",
-                        //    text: "Second Button",
-                        //    margin: 10,
-                        //    horizontalAlignment: 'center',
-                        //    verticalAlignment: 'center',
-                        //    selectable: true
-                        //},
-                        //]
+                        bindText: 'secondButtonText'
                     }, {
                         type: 'button',   
                         click: function () { console.log('click') },
                         text: "Third Button"
-                        //children: [{
-                        //    type: "text",
-                        //    text: "Third Button",
-                        //    margin: 15,
-                        //    horizontalAlignment: 'center',
-                        //    verticalAlignment: 'center',
-                        //    selectable: true
-                        //},
-                        //]
                     }, {
                         type: 'button',
                         click: function () { console.log('click') },
                         text: "Fourth Button",
-                        
-                        //children: [{
-                        //    type: "text",
-                        //    text: "Third Button",
-                        //    margin: 15,
-                        //    horizontalAlignment: 'center',
-                        //    verticalAlignment: 'center',
-                        //    selectable: true
-                        //},
-                        //]
                     }
                     , {
                         type: 'split',
@@ -94,6 +57,10 @@ var LayoutTest;
                 }]
             }]
         };
+
+        var o = Layout.create(definition);
+        o.data = { secondButtonText: 'Data Bound' };
+        return o;
 
         //var definition = {
         //    type: 'host',
@@ -156,7 +123,7 @@ var LayoutTest;
         //        }]
         //    };
 
-        return Layout.create(definition);
+        
         //var definition =
         //    {
         //        type: 'stack', orientation: 'vertical', children: [

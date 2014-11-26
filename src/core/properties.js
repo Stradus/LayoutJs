@@ -2,6 +2,43 @@
 var Layout;
 (function (Layout) {
     var recordAccess = false;
+    var cascadingProperties = new Set();
+    var bindings = new WeakMap();
+
+    Layout.dataBind = function (element, elementPropertyName, bindingExpression) {
+        //if (element.data.hasOwnProperty(bindingExpression)) {
+        //    Layout.connectWithProperty(element, elementPropertyName, element.data, false);
+        //}
+        var binding = {
+            element: element,
+            elementPropertyName: elementPropertyName,
+            bindingExpression: bindingExpression,
+            data: undefined
+        }
+        if (!bindings.has(element)) {
+            var elementBindings = new Map();
+            bindings.set(element, elementBindings);
+        } else {
+            elementBindings = bindings.get(element);
+        }
+        elementBindings.set(elementPropertyName, binding);
+
+    };
+
+    var updateBinding = function (binding) {
+        if (binding.data !== binding.element.data) {
+            Layout.connectWithProperty(binding.element,
+                binding.elementPropertyName, binding.element.data, binding.bindingExpression, false);
+            binding.data = binding.element.data;
+        }
+    };
+
+    Layout.updateBindings = function (element) {
+        if (element.data && bindings.has(element)) {
+            bindings.get(element).forEach(updateBinding);
+        }
+    };
+
 
     var activeBindingProperty = undefined;
     Layout.connectWithProperty = function (element, elementPropertyName, object, objectPropertyName, createObjectProperty) {
@@ -14,7 +51,7 @@ var Layout;
         if (createObjectProperty && !object.hasOwnProperty(objectPropertyName)) {
             object[objectPropertyName] = undefined;
         }
-        
+
         if (object.hasOwnProperty(objectPropertyName)) {
             var property = getProperty(object, objectPropertyName);
             if (!property) {
@@ -68,11 +105,12 @@ var Layout;
                         if (originalValue !== property.value) {
                             handlePartners(property);
                             handleSubscribers(property);
-                        } 
+                        }
                     },
                     configurable: true
                 }
                 Object.defineProperty(object, objectPropertyName, o);
+                addElementPropertyToMap(property);
                 console.log("New property wrapper created for: " + objectPropertyName);
             }
         } else {
@@ -123,24 +161,38 @@ var Layout;
         });
     };
 
+    Layout.applyCascade = function (element) {
+        if (!element.parent) {
+            return;
+        }
+        cascadingProperties.forEach(function (name) {
+            element[name] = element.parent[name];
+        })
+    }
+
     Layout.addProperty = function (element, name, options) {
         if (!options) {
             options = { get: true, set: true };
         }
         if (typeof options === 'function') {
-            options = { get: true, set: true, onChange: options };
+            options = { get: true, set: true, changed: options };
+        }
+        if (options.cascading) {
+            cascadingProperties.add(name);
         }
         var property = {
             element: element,
             name: name,
             value: null, // Helps for debugging, this value shold never be observed
             valueSet: false,
-            onChange: options.onChange,
+            changed: options.changed,
+            filter: options.filter,
             subscribers: new Set(),
             partners: new Set(),
             needsMeasure: options.needsMeasure,
             needsArrange: options.needsArrange,
-            needsRender: options.needsRender
+            needsRender: options.needsRender,
+            cascade: options.cascade
         };
 
         if (Layout.performance.checkValidPropertyValues && options.validValues) {
@@ -171,15 +223,23 @@ var Layout;
                 if (recordAccess) {
                     accessedForWrite(property);
                 }
-                if (property.valueSet && v === property.value) {
+                //if (property.valueSet && v === property.value) {
+                //    return;
+                //}
+                property.valueSet = true;
+                if (property.filter) {
+                    var newValue = property.filter(v);
+                } else {
+                    newValue = v;
+                }
+                if (newValue === property.value) {
                     return;
                 }
-                property.valueSet = true;
-                if (property.onChange) {
-                    property.value = property.onChange(v);
-                } else {
-                    property.value = v;
+                property.value = newValue;
+                if (property.changed) {
+                    property.changed(property.value);
                 }
+
                 if (property.needsMeasure) {
                     property.element.needsMeasure = true;
                 }
@@ -189,9 +249,14 @@ var Layout;
                 if (property.needsRender) {
                     property.element.needsRender = true;
                 }
+                if (property.cascade) {
+                    property.element.visualChildren.forEach(function (c) {
+                        c[property.name] = property.value;
+                    });
+                }
                 handlePartners(property);
                 handleSubscribers(property);
-                
+
             };
         }
         Object.defineProperty(element, name, o);

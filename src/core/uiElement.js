@@ -65,7 +65,6 @@ var Layout;
                 changedCssValues[name] = value;
                 self.needsRender = true;
             }
-            return value;
         };
         self.addCssProperty = function (name, needsMeasure, defaultValue, validValues) {
             var changeFunc = changeCssValue.bind(this, name);
@@ -77,7 +76,7 @@ var Layout;
                 needsMeasure: needsMeasure,
                 get: true,
                 set: true,
-                onChange: changeFunc,
+                changed: changeFunc,
                 'default': defaultValue,
                 validValues: validValues
             });
@@ -91,7 +90,6 @@ var Layout;
         //        if (self.html) {
         //            self.html[name] = v;
         //        }
-        //        return v;
         //    };
         //    if (arguments.length > 2) {
         //        changeFunc(defaultValue);
@@ -101,7 +99,7 @@ var Layout;
         //        get: true,
         //        set: true,
         //        'default': defaultValue,
-        //        onChange: changeFunc,
+        //        changed: changeFunc,
         //        validValues: validValues
         //    });
         //};
@@ -138,6 +136,7 @@ var Layout;
             }
             children.push(child);
             child.setParent(self);
+            Layout.applyCascade(child);
             self.needsMeasure = true;
         }
 
@@ -194,6 +193,7 @@ var Layout;
             }
         })
 
+        Object.defineProperty(self, 'parent', { get: function () { return parent; } });
 
 
 
@@ -231,7 +231,17 @@ var Layout;
             configurable: true
         });
 
-        //self.addProperty('styles', { set: true, get: true });
+        self.addProperty('data', {
+            set: true, get: true, cascade: true, changed: function (v) {
+                Layout.updateBindings(self);
+            }
+        });
+        self.bind = function (elmentPropertyName, bindingExpression) {
+            if (!self.hasOwnProperty(ElementPropertyName)) {
+                throw "Cannot bind to non existing property name on element: " + elementPropertyName
+            }
+            Layout.dataBind(self, elmentPropertyName, bindingExpression);
+        }
 
 
         self.html = undefined;
@@ -261,7 +271,7 @@ var Layout;
             }
         };
 
-        Object.defineProperty(self, 'parent', { get: function () { return parent; } });
+        
 
         self.addProperty('display', {
             get: true, set: true, 'default': 'visible', needsMeasure: true,
@@ -281,7 +291,7 @@ var Layout;
         Object.freeze(zeroThickness); // Should never change
         self.addProperty('margin', {
             get: true, set: true, 'default': zeroThickness,
-            onChange: function (v) {
+            filter: function (v) {
                 var thickness;
                 if (typeof v === 'number') {
                     thickness = { top: v, right: v, bottom: v, left: v };
@@ -309,12 +319,12 @@ var Layout;
         };
         self.addProperty('border', {
             get: true, set: true, 'default': zeroThickness,
-            onChange: positiveThicknessChangeFunc,
+            filter: positiveThicknessChangeFunc,
             needsMeasure: true
         })
         self.addProperty('padding', {
             get: true, set: true, 'default': zeroThickness,
-            onChange: positiveThicknessChangeFunc,
+            filter: positiveThicknessChangeFunc,
             needsMeasure: true
         })
         self.addCssProperty('boxShadow', false, '');
@@ -326,7 +336,7 @@ var Layout;
             get: true,
             set: true,
             needsArrange: true,
-            onChange: function (v) {
+            filter: function (v) {
                 var radius;
                 if (typeof v === 'number') {
                     radius = { topLeft: v, topRight: v, bottomRight: v, bottomLeft: v };
@@ -361,9 +371,8 @@ var Layout;
             self.addVisualChild(visualChild);
         };
         self.addProperty('template', {
-            get: true, set: true, onChange: function (v) {
+            get: true, set: true, changed: function (v) {
                 setTemplate(v);
-                return v;
             }
         });
 

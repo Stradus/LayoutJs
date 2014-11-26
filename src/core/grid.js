@@ -14,7 +14,7 @@
 //        self.addProperty('columns', {
 //            get: true,
 //            set: true,
-//            onChange: function (v) {
+//            filter: function (v) {
 //                v.forEach(function (c) {
 //                    if (Object.getOwnPropertyDescriptor(c, 'width').configurable) {
 //                        var width = c.width;
