@@ -16,7 +16,7 @@ var LayoutTest;
                     orientation: 'vertical',
                     children: [{
                         type: 'button',                   
-                        click: function () { console.log('click') },
+                        bindClick: 'clickHandler',
                         text: "Button Text"
                     }, {
                         type: 'button',                   
@@ -59,7 +59,10 @@ var LayoutTest;
         };
 
         var o = Layout.create(definition);
-        o.data = { secondButtonText: 'Data Bound' };
+        o.data = {
+            secondButtonText: 'Data Bound',
+            clickHandler: function(){console.log('Clicked')}
+        };
         return o;
 
         //var definition = {

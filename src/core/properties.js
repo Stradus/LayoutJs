@@ -117,7 +117,9 @@ var Layout;
             throw "Non-existing property name on object: " + objectPropertyName;
         }
         property.partners.add(elementProperty);
-        elementProperty.partners.add(property);
+        if (elementProperty.partners) {
+            elementProperty.partners.add(property);
+        }
         elementProperty.element[elementProperty.name] = property.element[property.name];
     };
 
@@ -146,7 +148,11 @@ var Layout;
         try {
             property.partners.forEach(function (p) {
                 if (p !== activeBindingProperty) {
-                    p.element[p.name] = property.value;
+                    if (p.type === 'trigger') {
+                        p.element[p.name].addHandler( property.value);
+                    } else {
+                        p.element[p.name] = property.value;
+                    }
                 }
             });
         }
@@ -332,6 +338,7 @@ var Layout;
         var property = {
             element: element,
             name: name,
+            type: 'trigger',
             value: null,
             //subscribers: new Set(), //Triggered event properties are internal and can never have subscribers
             compute: trigger,
@@ -383,6 +390,7 @@ var Layout;
             }
         });
         property.updateValue();
+        addElementPropertyToMap(property);
         return property;
     };
 
