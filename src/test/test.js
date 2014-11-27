@@ -52,7 +52,20 @@ var LayoutTest;
                                 horizontalAlignment: 'stretch'
                             },
                         ]
+                    }, {
+                        type: 'file',
+                        text: 'Upload files...'
+                    }, {
+                        type: 'file',
+                        selectionMode: 'directory',
+                        text: 'Upload directory...'
                     }
+                //    , {
+                //    type: 'button',
+                //    click: function () { console.log('click') },
+                //    text: "Last Button",
+                //}
+
                     ]
                 }]
             }]

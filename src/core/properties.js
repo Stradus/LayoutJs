@@ -149,6 +149,7 @@ var Layout;
             property.partners.forEach(function (p) {
                 if (p !== activeBindingProperty) {
                     if (p.type === 'trigger') {
+                        p.element[p.name].removeAllHandlers();
                         p.element[p.name].addHandler( property.value);
                     } else {
                         p.element[p.name] = property.value;

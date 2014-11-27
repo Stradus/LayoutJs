@@ -126,11 +126,13 @@ var Layout;
             hostHtmlElement.margin = '0px';
             if (!rootRect) {
                 rootRect = hostHtmlElement.getBoundingClientRect();
+                //rootRect = { x: rect.left, y: rect.top, left:rect.left, top:rect.top, width: rect.width, height: rect.height };
+                //rootRect = rect;
             }
-            rootRect.width = rootRect.width === 0 ? Infinity : rootRect.width;
-            rootRect.height = rootRect.height === 0 ? Infinity : rootRect.height;
-            rootRect.x = rootRect.x || 0;
-            rootRect.y = rootRect.y || 0;
+            //rootRect.width = rootRect.width === 0 ? Infinity : rootRect.width;
+            //rootRect.height = rootRect.height === 0 ? Infinity : rootRect.height;
+            //rootRect.x = rootRect.x || 0;
+            //rootRect.y = rootRect.y || 0;
             Layout.initializeEventHandling(hostHtmlElement);
         }
 
