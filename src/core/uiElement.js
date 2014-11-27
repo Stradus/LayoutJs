@@ -626,7 +626,7 @@ var Layout;
                 html.style.top = self.renderSize.y + 'px';
             }
 
-            // We still carry out these stpes even if we are collapsed since we have to make sure
+            // We still carry out these steps even if we are collapsed since we have to make sure
             // we dont display the children as well
             if (self.renderSelf) {
                 self.renderSelf(self.renderSize);
@@ -635,6 +635,9 @@ var Layout;
             for (var i = 0; i < children.length; i++) {
                 var child = children[i];
                 child.render(htmlParent, { x: self.renderSize.x + self.border.left, y: self.renderSize.y + self.border.top });
+            }
+            if (self.postRenderSelf) {
+                self.postRenderSelf(self.renderSize);
             }
         };
         return self;

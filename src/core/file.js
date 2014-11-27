@@ -19,7 +19,7 @@ var Layout;
                 fileInput.style.position = 'relative';
                 fileInput.style.width = '0px';
                 fileInput.style.height = '100%';
-                //fileInput.style.opacity = 0.0;
+                fileInput.style.opacity = 0.0;
                 //fileInput.style.visibility = 'hidden';
                 fileForm.appendChild(fileInput);
                 fileInput.onchange = function (e) {
@@ -41,11 +41,12 @@ var Layout;
         //self.renderPostChildren = function () {
 
         //};
-
-        self.click.addHandler(function () {
+        var clickHandler = function () {
+            console.log('Clicking input');
             fileForm.reset();
             fileInput.click();
-        });
+        };
+        self.click.addHandler(clickHandler);
         var applySelectionMode = function (v) {
             if(!fileInput){
                 return;
@@ -75,6 +76,16 @@ var Layout;
         self.addProperty('files', {
             get:true, set:true, 'default':[]
         });
+
+        //self.postRenderSelf = function (renderSize) {
+        //    for (var i = 0; i < self.visualChildren.length; i++) {
+        //        if (self.visualChildren[i].html) {
+        //            self.visualChildren[i].html.onclick = clickHandler;
+        //        }
+        //    }
+        //};
+
+
         //self.addProperty('isDisabled', { get: true, set: true, 'default': false })
         //self.addProperty('pointerOverStyle');
         //self.addProperty('buttonDownStyle');
