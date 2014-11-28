@@ -3,6 +3,82 @@ var LayoutTest;
 (function (LayoutTest) {
     LayoutTest.test = function () {
 
+        var dataBinding = {
+            type: 'stack',
+            orientation: 'vertical',
+            horizontalALignment: 'left',
+            children: [
+            {
+                type: 'text',
+                bindText: 'textValue'
+            },
+            {
+                type: 'text',
+                dataSelector: 'sub',
+                bindText: 'subValue'
+            }
+            ]
+        };
+
+        var buttonStack = {
+            type: 'stack',
+            horizontalAlignment: 'center',
+            verticalAlignment: 'center',
+            orientation: 'vertical',
+            children: [{
+                type: 'button',
+                bindClick: 'clickHandler',
+                text: "Button Text"
+            }, {
+                type: 'button',
+                isDisabled: true,
+                click: function () { console.log('click') },
+                bindText: 'secondButtonText'
+            }, {
+                type: 'button',
+                click: function () { console.log('click') },
+                text: "Third Button"
+            }, {
+                type: 'button',
+                click: function () { console.log('click') },
+                text: "Fourth Button",
+            }
+            , {
+                type: 'split',
+                orientation: 'horizontal',
+                background: 'gray',
+                cornerRadius: 4,
+                border: 1,
+                children: [
+                    {
+                        type: 'contentHost',
+                        background: 'green',
+                        padding: 5,
+                        horizontalAlignment: 'stretch'
+                    },
+                    {
+                        type: 'contentHost',
+                        background: 'red',
+                        padding: 5,
+                        horizontalAlignment: 'stretch'
+                    },
+                ]
+            }, {
+                type: 'file',
+                text: 'Upload files...'
+            }, {
+                type: 'file',
+                selectionMode: 'directory',
+                text: 'Upload directory...'
+            }
+        //    , {
+        //    type: 'button',
+        //    click: function () { console.log('click') },
+        //    text: "Last Button",
+        //}
+
+            ]
+        };
         var definition = {
             type: 'host',
             children: [{
@@ -11,71 +87,22 @@ var LayoutTest;
                 verticalAlignment: 'stretch',
                 children: [{
                     type: 'stack',
-                    horizontalAlignment: 'center',
+                    horzontalAlignment: 'center',
                     verticalAlignment: 'center',
-                    orientation: 'vertical',
-                    children: [{
-                        type: 'button',                   
-                        bindClick: 'clickHandler',
-                        text: "Button Text"
-                    }, {
-                        type: 'button',                   
-                        isDisabled: true,
-                        click: function () { console.log('click') },
-                        bindText: 'secondButtonText'
-                    }, {
-                        type: 'button',   
-                        click: function () { console.log('click') },
-                        text: "Third Button"
-                    }, {
-                        type: 'button',
-                        click: function () { console.log('click') },
-                        text: "Fourth Button",
-                    }
-                    , {
-                        type: 'split',
-                        orientation: 'horizontal',                        
-                        background: 'gray',
-                        cornerRadius: 4,
-                        border:1,
-                        children: [
-                            {
-                                type: 'contentHost',
-                                background: 'green',
-                                padding:5,
-                                horizontalAlignment: 'stretch'
-                            },
-                            {
-                                type: 'contentHost',
-                                background: 'red',
-                                padding:5,
-                                horizontalAlignment: 'stretch'
-                            },
-                        ]
-                    }, {
-                        type: 'file',
-                        text: 'Upload files...'
-                    }, {
-                        type: 'file',
-                        selectionMode: 'directory',
-                        text: 'Upload directory...'
-                    }
-                //    , {
-                //    type: 'button',
-                //    click: function () { console.log('click') },
-                //    text: "Last Button",
-                //}
-
+                    orientation: 'horizontal',
+                    children: [
+                        buttonStack, dataBinding
                     ]
-                }]
+                }
+                ]
             }]
         };
 
         var o = Layout.create(definition);
-        o.data = {
-            secondButtonText: 'Data Bound',
-            clickHandler: function(){console.log('Clicked')}
-        };
+        //o.data = {
+        //    secondButtonText: 'Data Bound',
+        //    clickHandler: function(){console.log('Clicked')}
+        //};
         return o;
 
         //var definition = {
@@ -139,7 +166,7 @@ var LayoutTest;
         //        }]
         //    };
 
-        
+
         //var definition =
         //    {
         //        type: 'stack', orientation: 'vertical', children: [

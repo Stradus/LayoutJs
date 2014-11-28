@@ -56,6 +56,9 @@ var Layout;
         self.addTriggeredEvent = function (name, trigger) {
             Layout.addTriggeredEvent(self, name, trigger);
         };
+        self.addEvent = function (name) {
+            return Layout.addEvent(self, name);
+        }
 
         var cssValues = {};
         var changedCssValues = {};
@@ -231,8 +234,17 @@ var Layout;
             configurable: true
         });
 
+        self.addProperty('dataSelector',{get:true, set:true, 'default':undefined})
+
         self.addProperty('data', {
-            set: true, get: true, cascade: true, changed: function (v) {
+            set: true, get: true, cascade: true,
+            filter: function(v){
+                if(self.dataSelector && v){
+                    return v[self.dataSelector];
+                }
+                return v;
+            },
+            changed: function (v) {
                 Layout.updateBindings(self);
             }
         });

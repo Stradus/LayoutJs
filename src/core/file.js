@@ -6,6 +6,7 @@ var Layout;
         self.type = 'file';
         self.allowDefault = true;
         var fileInput, fileForm;
+        var newSelectionEvent = self.addEvent('newSelection');
         self.createHtml = function () {
             if (!self.html) {
                 self.html = document.createElement('div');
@@ -31,6 +32,7 @@ var Layout;
                     for (var i = 0; i < fileInput.files.length; i++) {
                         self.files.push(fileInput.files[i]);
                     }
+                    newSelectionEvent.run({ files: self.files });
                 };
                 applySelectionMode(self.selectionMode);
                 return true
@@ -76,6 +78,8 @@ var Layout;
         self.addProperty('files', {
             get:true, set:true, 'default':[]
         });
+
+        
 
         //self.postRenderSelf = function (renderSize) {
         //    for (var i = 0; i < self.visualChildren.length; i++) {

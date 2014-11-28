@@ -28,7 +28,7 @@ var Layout;
     var updateBinding = function (binding) {
         if (binding.data !== binding.element.data) {
             Layout.connectWithProperty(binding.element,
-                binding.elementPropertyName, binding.element.data, binding.bindingExpression, false);
+                binding.elementPropertyName, binding.element.data, binding.bindingExpression, true);
             binding.data = binding.element.data;
         }
     };
@@ -114,7 +114,8 @@ var Layout;
                 console.log("New property wrapper created for: " + objectPropertyName);
             }
         } else {
-            throw "Non-existing property name on object: " + objectPropertyName;
+            console.warn("Non-existing property name on object: " + objectPropertyName);
+            return;
         }
         property.partners.add(elementProperty);
         if (elementProperty.partners) {
@@ -190,7 +191,7 @@ var Layout;
         var property = {
             element: element,
             name: name,
-            value: null, // Helps for debugging, this value shold never be observed
+            value: null, // Helps for debugging, this value should never be observed
             valueSet: false,
             changed: options.changed,
             filter: options.filter,
@@ -394,6 +395,58 @@ var Layout;
         addElementPropertyToMap(property);
         return property;
     };
+
+    Layout.addEvent = function (element, name) {
+        var runHandlers = function (eventData) {
+            if (property.handlers.size > 0) {                
+                event = {
+                    element: property.element,
+                    name: property.name
+                };
+                if (eventData) {
+                    for (var name in eventData) {
+                        event[name] = eventData[name];
+                    }
+                }
+                //Object.freeze(event);
+                property.handlers.forEach(function (h) {
+                    h(event);
+                });
+            }
+        };
+        var property = {
+            element: element,
+            name: name,
+            type: 'trigger',
+            handlers: new Set(),
+            run: runHandlers
+        };
+        
+        var handlerManager = {
+            addHandler: function (handler) {
+                property.handlers.add(handler);
+            },
+            removeHandler: function (handler) {
+                property.handlers.delete(handler);
+            },
+            removeAllHandlers: function () {
+                property.handlers.clear();
+            },
+            triggerNow: function () {
+                runHandlers();
+            }
+        };
+        Object.freeze(handlerManager);
+        Object.defineProperty(element, name, {
+            get: function () { return handlerManager },
+            set: function (v) {
+                handlerManager.addHandler(v);
+            }
+        });
+        //property.updateValue();
+        addElementPropertyToMap(property);
+        return property;
+    }
 
 
 })(Layout || (Layout = {}));
