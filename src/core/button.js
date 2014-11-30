@@ -10,7 +10,7 @@ var Layout;
         self.addProperty('buttonDownStyle');
         self.addProperty('disabledStyle');
 
-        self.addTriggeredProperty('state', function (oldState) {
+        self.addAutoProperty('state', function (oldState) {
             var state = self.isDisabled?'disabled':( (self.isPointerDown & self.isPointerOver) ? 'buttonDown' :
                 (self.isPointerOver ? 'pointerOver' : 'default'));
             console.log('State: ' + state);
@@ -19,7 +19,7 @@ var Layout;
         });
       
         var clickActivated = false;
-        self.addTriggeredEvent('click', function () {
+        var isClickedProperty = self.addAutoProperty('isClicked', function () {
             if (self.isDisabled) {
                 clickActivated = false;
                 return false;
@@ -37,6 +37,8 @@ var Layout;
             clickActivated = false;
             return false;
         });
+
+        self.addAutoEvent('clicked', isClickedProperty);
 
         return self;
     }  

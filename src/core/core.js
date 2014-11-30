@@ -39,7 +39,7 @@ var Layout;
             }
             if (definition.hasOwnProperty('hoistProperties')) {
                 definition.hoistProperties.forEach(function (name) {
-                    Layout.connectWithProperty(element, name, templateHost, name, true);
+                    Layout.connectProperties(element, name, templateHost, name, true);
                 });
             }
             if (definition.hasOwnProperty('child') &&
@@ -69,9 +69,9 @@ var Layout;
         checkValidPropertyValues: true
     };
     var initializeThemes = function () {
-        Layout.addProperty(Layout, 'theme', {
+        Layout.defineProperty(Layout, 'theme', {
+            useOld: false,
             'default': tempTheme,
-            get: true, set: true,
             filter: function (v) {
                 if (typeof v === 'string') {
                     // Try to resolve theme name, (Can add extensible resolving of themes later if use case arises)

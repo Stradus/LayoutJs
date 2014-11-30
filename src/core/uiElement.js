@@ -5,7 +5,7 @@ var Layout;
     // It provideds all the basic support for layout, styling etc.
     Layout.uiElement = function (inheritor, maxChildren) {
         if (!inheritor) {
-            log.warn( "uiElement is an abstract class, it needs to have a descendant to inherit from.");
+            log.warn("uiElement is an abstract class, it needs to have a descendant to inherit from.");
             self = this;
         }
         var self = inheritor;
@@ -48,16 +48,20 @@ var Layout;
         };
 
         self.addProperty = function (name, options) {
-            Layout.addProperty(self, name, options);
+            //Layout.addProperty(self, name, options);
+            return Layout.defineProperty(self, name, options);
         };
-        self.addTriggeredProperty = function (name, compute) {
-            Layout.addTriggeredProperty(self, name, compute);
+        self.addAutoProperty = function (name, compute) {
+            //Layout.addTriggeredProperty(self, name, compute);
+            return Layout.defineProperty(self, name, { expression: compute });
         }
-        self.addTriggeredEvent = function (name, trigger) {
-            Layout.addTriggeredEvent(self, name, trigger);
+        self.addAutoEvent = function (name, triggerProperty) {
+            //Layout.addTriggeredEvent(self, name, trigger);
+            return Layout.defineEventProperty(self, name, triggerProperty);
         };
         self.addEvent = function (name) {
-            return Layout.addEvent(self, name);
+            //return Layout.addEvent(self, name);
+            return Layout.defineEventProperty(self, name);
         }
 
         var cssValues = {};
@@ -139,7 +143,8 @@ var Layout;
             }
             children.push(child);
             child.setParent(self);
-            Layout.applyCascade(child);
+            //Layout.applyCascade(child);
+            child.data = self.data;
             self.needsMeasure = true;
         }
 
@@ -234,31 +239,34 @@ var Layout;
             configurable: true
         });
 
-        self.addProperty('dataSelector',{get:true, set:true, 'default':undefined})
+        self.addProperty('dataSelector')
 
         self.addProperty('data', {
-            set: true, get: true, cascade: true,
-            filter: function(v){
-                if(self.dataSelector && v){
+            cascade: true,
+            filter: function (v) {
+                if (self.dataSelector && v) {
                     return v[self.dataSelector];
                 }
                 return v;
-            },
+            }
+            ,
             changed: function (v) {
-                Layout.updateBindings(self);
+                for (var i = 0; i < children.length; i++) {
+                    children[i].data = v;
+                }
             }
         });
-        self.bind = function (elmentPropertyName, bindingExpression) {
-            if (!self.hasOwnProperty(ElementPropertyName)) {
-                throw "Cannot bind to non existing property name on element: " + elementPropertyName
-            }
+        self.dataBind = function (elmentPropertyName, bindingExpression) {
+            //if (!self.hasOwnProperty(ElementPropertyName)) {
+            //    throw "Cannot bind to non existing property name on element: " + elementPropertyName
+            //}
             Layout.dataBind(self, elmentPropertyName, bindingExpression);
         }
 
 
         self.html = undefined;
 
-       
+
 
         var styleChanges = {};
         var activeStyleName = 'default';
@@ -283,26 +291,26 @@ var Layout;
             }
         };
 
-        
+
 
         self.addProperty('display', {
-            get: true, set: true, 'default': 'visible', needsMeasure: true,
+            'default': 'visible', needsMeasure: true,
             validValues: ['visible', 'hidden', 'collapsed']
         });
 
         self.addProperty('horizontalAlignment', {
-            get: true, set: true, 'default': 'stretch', needsArrange: true,
+            'default': 'stretch', needsArrange: true,
             validValues: ['left', 'center', 'right', 'stretch']
         });
 
         self.addProperty('verticalAlignment', {
-            get: true, set: true, 'default': 'stretch', needsArrange: true,
+            'default': 'stretch', needsArrange: true,
             validValues: ['top', 'center', 'bottom', 'stretch']
         });
         var zeroThickness = { top: 0, right: 0, bottom: 0, left: 0 };
         Object.freeze(zeroThickness); // Should never change
         self.addProperty('margin', {
-            get: true, set: true, 'default': zeroThickness,
+            'default': zeroThickness,
             filter: function (v) {
                 var thickness;
                 if (typeof v === 'number') {
@@ -330,12 +338,12 @@ var Layout;
             return Object.freeze(thickness);
         };
         self.addProperty('border', {
-            get: true, set: true, 'default': zeroThickness,
+            'default': zeroThickness,
             filter: positiveThicknessChangeFunc,
             needsMeasure: true
         })
         self.addProperty('padding', {
-            get: true, set: true, 'default': zeroThickness,
+            'default': zeroThickness,
             filter: positiveThicknessChangeFunc,
             needsMeasure: true
         })
@@ -343,34 +351,34 @@ var Layout;
         self.addCssProperty('borderStyle', false, 'solid', ['dotted', 'dashed', 'solid', 'double', 'groove', 'ridge', 'inset', 'outset']);
         self.addCssProperty('borderColor', false, 'black');
         self.addCssProperty('opacity', false);
-        var zeroRadius = Object.freeze({topLeft:0, topRight:0, bottomRight:0, bottomLeft:0});
+        var zeroRadius = Object.freeze({ topLeft: 0, topRight: 0, bottomRight: 0, bottomLeft: 0 });
         self.addProperty('cornerRadius', {
-            get: true,
-            set: true,
             needsArrange: true,
             filter: function (v) {
                 var radius;
                 if (typeof v === 'number') {
                     radius = { topLeft: v, topRight: v, bottomRight: v, bottomLeft: v };
                 } else {
-                    radius = { topLeft: v.topLeft || 0, topRight: v.topRight || 0, 
-                        bottomRight: v.bottomRight || 0, bottomLeft: v.bottomLeft || 0 };
+                    radius = {
+                        topLeft: v.topLeft || 0, topRight: v.topRight || 0,
+                        bottomRight: v.bottomRight || 0, bottomLeft: v.bottomLeft || 0
+                    };
                 }
                 //// Now movde to renderer, since it might be changed by organizers
                 //changeCssValue('borderRadius', radius.topLeft + 'px ' + radius.topRight + 'px '
                 //    + radius.bottomRight + 'px ' + radius.bottomLeft + 'px');
                 return Object.freeze(radius);
             },
-            'default':zeroRadius
+            'default': zeroRadius
         });
 
 
-        self.addProperty('isPointerOver', { get: true, set: true, 'default': false });
-        self.addProperty('isPointerDown', { get: true, set: true, 'default': false });
-        
+        self.addProperty('isPointerOver', { 'default': false });
+        self.addProperty('isPointerDown', { 'default': false });
+
 
         //self.isLogicalHost = true;
-        self.protected.setLogicalDescendant = function(element){
+        self.protected.setLogicalDescendant = function (element) {
             logicalDescendant = element;
         };
         var setTemplate = function (template) {
@@ -379,7 +387,7 @@ var Layout;
                 return;
             };
             var visualChild = Layout.create(template, self);
-            
+
             self.addVisualChild(visualChild);
         };
         self.addProperty('template', {
@@ -388,7 +396,7 @@ var Layout;
             }
         });
 
-       
+
 
         self.protected.applyTheme = function () {
             var style = Layout.getThemeStyleForElement(self);
@@ -418,13 +426,13 @@ var Layout;
         };
 
 
-     
 
 
-        
 
-       
-        
+
+
+
+
         //self.protected.subtractThickness = function (border, size) {
         //    return {
         //        x: size.x + border.left,
@@ -617,10 +625,10 @@ var Layout;
                         self.border.bottom + 'px ' +
                         self.border.left + 'px';
                 }
-                var radius = self.actualCornerRadius||self.cornerRadius;
-                if(lastRadius !==radius && (!lastRadius ||
-                    radius.topLeft!==lastRadius.topLeft ||  
-                    radius.topRight !== lastRadius.topRight||
+                var radius = self.actualCornerRadius || self.cornerRadius;
+                if (lastRadius !== radius && (!lastRadius ||
+                    radius.topLeft !== lastRadius.topLeft ||
+                    radius.topRight !== lastRadius.topRight ||
                     radius.bottomRight !== lastRadius.bottomRight ||
                     radius.bottomLeft !== lastRadius.bottomLeft)) {
                     html.style.borderRadius = radius.topLeft + 'px ' + radius.topRight + 'px '

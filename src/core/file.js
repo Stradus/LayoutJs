@@ -48,7 +48,7 @@ var Layout;
             fileForm.reset();
             fileInput.click();
         };
-        self.click.addHandler(clickHandler);
+        self.click = clickHandler;
         var applySelectionMode = function (v) {
             if(!fileInput){
                 return;

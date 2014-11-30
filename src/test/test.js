@@ -99,10 +99,11 @@ var LayoutTest;
         };
 
         var o = Layout.create(definition);
-        //o.data = {
-        //    secondButtonText: 'Data Bound',
-        //    clickHandler: function(){console.log('Clicked')}
-        //};
+        o.data = {
+            secondButtonText: 'Data Bound Text for this Button',
+            clickHandler: function () { console.log('Clicked') },
+            sub:{subValue:'Hello submodel'}
+        };
         return o;
 
         //var definition = {
