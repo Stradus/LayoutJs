@@ -209,12 +209,18 @@ var Layout;
         objectA[nameA] = objectB[nameB];
     };
 
-    Layout.dataBind = function (object, name, expression) {
+    Layout.dataBind = function (object, name, expression, dependents) {
         var property = getOrCreateLayoutProperty(object, name);
         if (typeof expression === 'string') {
+            // Make sure property exists
+            var lastData;
             property.expression = function () {
                 var data = object.data;
                 if (data) {
+                    if (lastData !== data) {
+                        lastData = data;
+                        getOrCreateLayoutProperty(object.data, expression);
+                    }
                     return data[expression];
                 }
             };
@@ -264,6 +270,7 @@ var Layout;
                 }
             });
         }
+        return property;
     }
 
     //Layout.applyCascade = function () {

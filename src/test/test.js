@@ -37,7 +37,7 @@ var LayoutTest;
             }, {
                 type: 'button',
                 click: function () { console.log('click') },
-                text: "Third Button"
+                bindText: 'thirdButtonText'
             }, {
                 type: 'button',
                 click: function () { console.log('click') },
@@ -101,9 +101,11 @@ var LayoutTest;
         var o = Layout.create(definition);
         o.data = {
             secondButtonText: 'Data Bound Text for this Button',
+            thirdButtonText: 'Should not be visible',
             clickHandler: function () { console.log('Clicked') },
             sub:{subValue:'Hello submodel'}
         };
+        o.data.thirdButtonText = 'Final text';
         return o;
 
         //var definition = {

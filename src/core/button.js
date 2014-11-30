@@ -38,7 +38,7 @@ var Layout;
             return false;
         });
 
-        self.addAutoEvent('clicked', isClickedProperty);
+        self.addAutoEvent('click', isClickedProperty);
 
         return self;
     }  

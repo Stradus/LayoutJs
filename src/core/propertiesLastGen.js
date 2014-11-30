@@ -396,57 +396,57 @@ var Layout;
     //    return property;
     //};
 
-    Layout.addEvent = function (element, name) {
-        var runHandlers = function (eventData) {
-            if (property.handlers.size > 0) {                
-                event = {
-                    element: property.element,
-                    name: property.name
-                };
-                if (eventData) {
-                    for (var name in eventData) {
-                        event[name] = eventData[name];
-                    }
-                }
-                //Object.freeze(event);
-                property.handlers.forEach(function (h) {
-                    h(event);
-                });
-            }
-        };
-        var property = {
-            element: element,
-            name: name,
-            type: 'trigger',
-            handlers: new Set(),
-            run: runHandlers
-        };
+    //Layout.addEvent = function (element, name) {
+    //    var runHandlers = function (eventData) {
+    //        if (property.handlers.size > 0) {                
+    //            event = {
+    //                element: property.element,
+    //                name: property.name
+    //            };
+    //            if (eventData) {
+    //                for (var name in eventData) {
+    //                    event[name] = eventData[name];
+    //                }
+    //            }
+    //            //Object.freeze(event);
+    //            property.handlers.forEach(function (h) {
+    //                h(event);
+    //            });
+    //        }
+    //    };
+    //    var property = {
+    //        element: element,
+    //        name: name,
+    //        type: 'trigger',
+    //        handlers: new Set(),
+    //        run: runHandlers
+    //    };
         
-        var handlerManager = {
-            addHandler: function (handler) {
-                property.handlers.add(handler);
-            },
-            removeHandler: function (handler) {
-                property.handlers.delete(handler);
-            },
-            removeAllHandlers: function () {
-                property.handlers.clear();
-            },
-            triggerNow: function () {
-                runHandlers();
-            }
-        };
-        Object.freeze(handlerManager);
-        Object.defineProperty(element, name, {
-            get: function () { return handlerManager },
-            set: function (v) {
-                handlerManager.addHandler(v);
-            }
-        });
-        //property.updateValue();
-        addElementPropertyToMap(property);
-        return property;
-    }
+    //    var handlerManager = {
+    //        addHandler: function (handler) {
+    //            property.handlers.add(handler);
+    //        },
+    //        removeHandler: function (handler) {
+    //            property.handlers.delete(handler);
+    //        },
+    //        removeAllHandlers: function () {
+    //            property.handlers.clear();
+    //        },
+    //        triggerNow: function () {
+    //            runHandlers();
+    //        }
+    //    };
+    //    Object.freeze(handlerManager);
+    //    Object.defineProperty(element, name, {
+    //        get: function () { return handlerManager },
+    //        set: function (v) {
+    //            handlerManager.addHandler(v);
+    //        }
+    //    });
+    //    //property.updateValue();
+    //    addElementPropertyToMap(property);
+    //    return property;
+    //}
 
 
 })(Layout || (Layout = {}));
