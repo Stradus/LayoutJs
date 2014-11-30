@@ -229,7 +229,7 @@ var Layout;
         calculateNewValue(property);
     };
 
-    Layout.peekPropertyValue = function (object, value) {
+    Layout.peekPropertyValue = function (object, name) {
         var property = getPropertyFromStore(object, name);
         if (!property) {
             return;
