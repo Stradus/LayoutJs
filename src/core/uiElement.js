@@ -239,22 +239,47 @@ var Layout;
             configurable: true
         });
 
-        self.addProperty('dataSelector')
+        //var dataSelection =function (v) {
+        //    if (v && self.parent) {
+        //        var data = Layout.peekPropertyValue(self.parent, 'data');
+        //        if (data) {
+        //            Layout.defineProperty(self.parent, v, {
+        //                changed: function () {
+        //                    var data = Layout.peekPropertyValue(self.parent, 'data');
+        //                    self.data = self.parent.data[v];
+        //                }
+        //            });
+        //        }
+        //    }
+        //};
+
+        self.addProperty('dataSelector');//, {
+            //changed: dataSelection 
+        //});
         self.addProperty('data', {
             cascade: true,
             filter: function (v) {
                 if (self.dataSelector && v) {
+                    if (!Layout.isPropertyDefined(v, self.dataSelector)) {
+                        Layout.defineProperty(v, self.dataSelector, {
+                            changed: function () {
+                                self.data = self.parent.data;
+                            }
+                        });
+                    }
                     return v[self.dataSelector];
                 }
                 return v;
             }
             ,
             changed: function (v) {
+                //dataSelection(Layout.peekPropertyValue(self, 'dataSelector'));
                 for (var i = 0; i < children.length; i++) {
                     children[i].data = v;
                 }
             }
         });
+
         self.dataBind = function (elmentPropertyName, bindingExpression) {            
             Layout.dataBind(self, elmentPropertyName, bindingExpression);
         }

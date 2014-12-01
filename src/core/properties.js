@@ -106,6 +106,9 @@ var Layout;
                     return;
                 }
                 property.currentValue = newValue;
+                if (!oldGetInprogress && property.originalSet) {
+                    property.originalSet(property.currentValue);
+                }
                 property.subscribers.forEach(function (p) {
                     p.propertyChanged(p, property);
                 });
@@ -121,9 +124,7 @@ var Layout;
                 if (property.needsRender) {
                     property.object.needsRender = true;
                 }
-                if (!oldGetInprogress && property.originalSet) {
-                    property.orginalSet(property.currentValue);
-                }
+               
                 //if (property.cascade) {
                 //    Layout.applyCascade(property)
                 //}
@@ -146,6 +147,10 @@ var Layout;
         })
         addPropertyToStore(property);
         return property;
+    }
+
+    Layout.isPropertyDefined = function (object, name) {
+        return getPropertyFromStore(object, name);
     }
 
     Layout.defineProperty = function (object, name, options) {

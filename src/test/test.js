@@ -36,6 +36,10 @@ var LayoutTest;
                 type: 'button',
                 bindClick: 'updateDataHandler',
                 text: "Change data"
+            },
+            {
+                type: 'text',
+                bindText: 'smartOne'
             }
             ]
         };
@@ -119,18 +123,22 @@ var LayoutTest;
         };
 
         var o = Layout.create(definition);
-        o.data = {
+        var data = {
             secondButtonText: 'Data Bound Text for this Button',
             thirdButtonText: 'Should not be visible',
             clickHandler: function () { console.log('Clicked') },
             sub: { subValue: 'Hello submodel' }
         };
-        o.data.thirdButtonText = 'Final text';
-        o.data.textValue = 'Late binding';
-        o.data.updateDataHandler = function () {
-            o.data.sub.firstName = 'John';
-            o.data.sub.lastName = 'Doe';
+        var smartValue = 'This should not show';
+        Object.defineProperty(data, 'smartOne', {configurable:true, get: function () { return smartValue; }, set: function (v) { smartValue = v; } })
+        o.data = data;
+        data.thirdButtonText = 'Final text';
+        data.textValue = 'Late binding';
+        data.updateDataHandler = function () {
+            data.sub.firstName = 'John';
+            data.sub.lastName = 'Doe';
         }
+        data.smartOne = "Correct";
         return o;
 
         //var definition = {
