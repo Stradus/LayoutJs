@@ -3,6 +3,7 @@ var Layout;
 (function (Layout) {
 
     var propertyStore = new WeakMap();
+
     var addPropertyToStore = function (property) {
         var objectProperties = propertyStore.get(property.object);
         if (!objectProperties) {
@@ -146,9 +147,9 @@ var Layout;
         addPropertyToStore(property);
         return property;
     }
-    
+
     Layout.defineProperty = function (object, name, options) {
-        var property = getOrCreateLayoutProperty(object, name,options? options.useOld:undefined);
+        var property = getOrCreateLayoutProperty(object, name, options ? options.useOld : undefined);
         if (!options) {
             return;
         }
@@ -167,7 +168,7 @@ var Layout;
                 property.validValues = undefined;
             }
         }
-       
+
         if (options.hasOwnProperty('needsMeasure')) {
             property.needsMeasure = options.needsMeasure;
         }
@@ -209,26 +210,57 @@ var Layout;
         objectA[nameA] = objectB[nameB];
     };
 
+    Function.prototype.dependsOn = function (d) {
+        this.__layoutDependencies = d;
+        return this;
+    }
+
     Layout.dataBind = function (object, name, expression, dependents) {
         var property = getOrCreateLayoutProperty(object, name);
+        var lastData;
         if (typeof expression === 'string') {
             // Make sure property exists
-            var lastData;
+
             property.expression = function () {
                 var data = object.data;
                 if (data) {
                     if (lastData !== data) {
                         lastData = data;
-                        getOrCreateLayoutProperty(object.data, expression);
+                        getOrCreateLayoutProperty(data, expression);
                     }
                     return data[expression];
                 }
             };
         }
-        else {
-            property.expression = function () {              
-                return expression.call( object.data);
+        else if (typeof expression === 'function') {
+            property.expression = function () {
+                return expression.call(object.data);
             };
+        } else if (typeof expression === 'object') {
+            expression.dependents = expression.dependents || [];
+            var dataDependencies = [];
+            for (var i = 0; i < expression.dependents.length; i++) {
+                var dependent = expression.dependents[i];
+                if (typeof dependent === 'string') {
+                    dataDependencies.push(dependent);
+                } else {
+                    getOrCreateLayoutProperty(dependent.object, dependent.name);
+                }
+            }
+            property.expression = function () {
+                var data = object.data;
+                if (data) {
+                    if (lastData !== data) {
+                        lastData = data;
+                        dataDependencies.forEach(function (name) {
+                            getOrCreateLayoutProperty(data, name);
+                        });
+                    }
+                }
+                return expression.expression.call(data || {});
+            }
+        } else {
+            throw "Inavlid expression type: " + (typeof expression);
         }
         // And now run it
         //object[name] = property.expression();

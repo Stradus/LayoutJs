@@ -240,7 +240,6 @@ var Layout;
         });
 
         self.addProperty('dataSelector')
-
         self.addProperty('data', {
             cascade: true,
             filter: function (v) {
@@ -256,18 +255,11 @@ var Layout;
                 }
             }
         });
-        self.dataBind = function (elmentPropertyName, bindingExpression) {
-            //if (!self.hasOwnProperty(ElementPropertyName)) {
-            //    throw "Cannot bind to non existing property name on element: " + elementPropertyName
-            //}
+        self.dataBind = function (elmentPropertyName, bindingExpression) {            
             Layout.dataBind(self, elmentPropertyName, bindingExpression);
         }
 
-
         self.html = undefined;
-
-
-
         var styleChanges = {};
         var activeStyleName = 'default';
         self.applyStyle = function (styleName) {
@@ -291,12 +283,23 @@ var Layout;
             }
         };
 
-
-
         self.addProperty('display', {
             'default': 'visible', needsMeasure: true,
             validValues: ['visible', 'hidden', 'collapsed']
         });
+        self.addProperty('isHidden', {
+            'default': false, changed: function (v) {
+                if (v) {
+                    self.display = 'hidden';
+                    return;
+                }
+                var display = Layout.peekPropertyValue(self, 'display');
+                if (display !== 'visible' && !v) {
+                    self.display = 'visible';
+                }
+            }
+        })
+
 
         self.addProperty('horizontalAlignment', {
             'default': 'stretch', needsArrange: true,

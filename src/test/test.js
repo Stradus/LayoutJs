@@ -2,7 +2,7 @@
 var LayoutTest;
 (function (LayoutTest) {
     LayoutTest.test = function () {
-
+        var staticText = 'Static Text';
         var dataBinding = {
             type: 'stack',
             orientation: 'vertical',
@@ -16,6 +16,26 @@ var LayoutTest;
                 type: 'text',
                 dataSelector: 'sub',
                 bindText: 'subValue'
+            },
+            {
+                type: 'text',
+                dataSelector: 'sub',
+                bindText: function () { return staticText }
+            },
+            {
+                type: 'text',
+                dataSelector: 'sub',
+                bindText: {
+                    expression: function () {
+                        return (this.firstName || 'No first name') + ', ' + (this.lastName || 'No last name');
+                    },
+                    dependents: ['firstName', 'lastName']
+                }
+            },
+            {
+                type: 'button',
+                bindClick: 'updateDataHandler',
+                text: "Change data"
             }
             ]
         };
@@ -103,9 +123,14 @@ var LayoutTest;
             secondButtonText: 'Data Bound Text for this Button',
             thirdButtonText: 'Should not be visible',
             clickHandler: function () { console.log('Clicked') },
-            sub:{subValue:'Hello submodel'}
+            sub: { subValue: 'Hello submodel' }
         };
         o.data.thirdButtonText = 'Final text';
+        o.data.textValue = 'Late binding';
+        o.data.updateDataHandler = function () {
+            o.data.sub.firstName = 'John';
+            o.data.sub.lastName = 'Doe';
+        }
         return o;
 
         //var definition = {
