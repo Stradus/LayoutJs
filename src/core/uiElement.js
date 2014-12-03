@@ -526,35 +526,41 @@ var Layout;
         //}
 
         self.protected.subtractOutside = function (size) {
+            var border = self.border; // Makes code more readable (and also faster on at least IE)
+            var margin = self.margin;
             return {
-                x: size.x + self.border.left + self.margin.left,
-                y: size.y + self.border.top + self.margin.top,
-                width: Math.max(0, size.width - self.border.totalWidth - self.margin.totalWidth),
-                height: Math.max(0, size.height - self.border.totalHeight - self.margin.totalHeight)
+                x: size.x + border.left + margin.left,
+                y: size.y + border.top + margin.top,
+                width: Math.max(0, size.width - border.totalWidth - margin.totalWidth),
+                height: Math.max(0, size.height - border.totalHeight - margin.totalHeight)
             };
         }
         self.protected.addOutside = function (size) {
+            var border = self.border; // Makes code more readable (and also faster on at least IE)
+            var margin = self.margin;
             return {
-                x: size.x - self.border.left - self.margin.left,
-                y: size.y - self.border.top - self.margin.top,
-                width: Math.max(0, size.width + self.border.totalWidth + self.margin.totalWidth),
-                height: Math.max(0, size.height + self.border.totalHeight + self.margin.totalHeight)
+                x: size.x - border.left - margin.left,
+                y: size.y - border.top - margin.top,
+                width: Math.max(0, size.width + border.totalWidth + margin.totalWidth),
+                height: Math.max(0, size.height + border.totalHeight + margin.totalHeight)
             };
         };
         self.protected.subtractPadding = function (size) {
+            var padding = self.padding;
             return {
-                x: size.x + self.padding.left,
-                y: size.y + self.padding.top,
-                width: Math.max(0, size.width - self.padding.totalWidth),
-                height: Math.max(0, size.height - self.padding.totalHeight)
+                x: size.x + padding.left,
+                y: size.y + padding.top,
+                width: Math.max(0, size.width - padding.totalWidth),
+                height: Math.max(0, size.height - padding.totalHeight)
             };
         }
         self.protected.addPadding = function (size) {
+            var padding = self.padding;
             return {
-                x: size.x - self.padding.left,
-                y: size.y - self.padding.top,
-                width: Math.max(0, size.width + self.padding.totalWidth),
-                height: Math.max(0, size.height + self.padding.totalHeight)
+                x: size.x - padding.left,
+                y: size.y - padding.top,
+                width: Math.max(0, size.width + padding.totalWidth),
+                height: Math.max(0, size.height + padding.totalHeight)
             };
         };
 

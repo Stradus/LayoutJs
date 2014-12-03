@@ -3,7 +3,7 @@ var Layout;
 (function (Layout) {
     var templateHosts = [];
     Layout.create = function (definition, templateHost) {
-        try {
+        //try {
             if (templateHost) {
                 templateHosts.push(templateHost);
             }
@@ -55,14 +55,15 @@ var Layout;
             for (var i = 0; i < children.length; i++) {
                 element.addChild(Layout.create(children[i]));
             }
-        }
+        //}
         //catch (e) {
         //    console.log('Error while creating: ' + definition ? definition.type : undefined);
         //    throw e;
         //}
-        finally {
+        
+    //finally {
             templateHosts.pop(templateHost);
-        }
+    //    }
         return element;
     }
     Layout.settings = {
