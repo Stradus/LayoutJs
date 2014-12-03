@@ -28,22 +28,33 @@ var Layout;
             if (rootElement.id === id) {
                 return rootElement;
             }
-            return rootElement.findChildElementById(id);
+            return rootElement.findDescendantElementById(id);
         };
 
-        self.findChildElementById = function (id) {
+        self.findDescendantElementById = function (id) {
             for (var i = 0; i < children.length; i++) {
                 if (children[i].id === id) {
                     return children[i];
                 }
-                var element = children[i].findChildElementById(id);
+                var element = children[i].findDescendantElementById(id);
                 if (element) {
                     return element;
                 }
             }
         };
 
+        self.findAncestorElementById = function (id) {
+            if (self.id === id) {
+                return self;
+            }
+            if (!self.parent) {
+                return;
+            }
+            return self.parent.findAncestorElementById(id);
+        }
+
         self.setParent = function (p) {
+            if (p) { p.updateActiveChildren(); };
             parent = p;
         };
 
@@ -55,9 +66,9 @@ var Layout;
             //Layout.addTriggeredProperty(self, name, compute);
             return Layout.defineProperty(self, name, { expression: compute });
         }
-        self.addAutoEvent = function (name, triggerProperty) {
+        self.addAutoEvent = function (name, triggerProperty, invert) {
             //Layout.addTriggeredEvent(self, name, trigger);
-            return Layout.defineEventProperty(self, name, triggerProperty);
+            return Layout.defineEventProperty(self, name, triggerProperty, invert);
         };
         self.addEvent = function (name) {
             //return Layout.addEvent(self, name);
@@ -146,6 +157,9 @@ var Layout;
             //Layout.applyCascade(child);
             child.data = self.data;
             self.needsMeasure = true;
+            if (self.addParentSpecificProperties) {
+                self.addParentSpecificProperties(child);
+            }
         }
 
         self.removeChild = function (child) {
@@ -160,6 +174,7 @@ var Layout;
             //if (child.parent && child.html) {
             //    child.html.parentElement.removeChild(child.html);
             //}
+            //self.activeChildren.
             removeHtml(child);
             child.setParent(undefined);
             child.html = undefined;
@@ -176,11 +191,25 @@ var Layout;
             }
         }
 
-        Object.defineProperty(self, 'children', { get: function () { return logicalDescendant.visualChildren } });
-        Object.defineProperty(self, 'visualChildren', { get: function () { return children } });
-        Object.defineProperty(self.protected, 'activeChildren', {
-            get: function () { return children.filter(function (e) { return e.visible !== 'collapsed' }) }
+        Object.defineProperty(self, 'children', {
+            get: function () { return logicalDescendant.visualChildren },
+            set: function (v) {
+                self.removeAllVisualChildren();
+                if (!v) { return; }
+                if (typeof v !== 'array') {
+                    v = [v];
+                }
+                for (var i = 0; i < v.length; i++) {
+                    self.addChild(v[i]);
+                }
+            }
         });
+        Object.defineProperty(self, 'visualChildren', { get: function () { return children } });
+        //Object.defineProperty(self.protected, 'activeChildren', {
+        //    get: function () { return children.filter(function (e) { return e.visible !== 'collapsed' }) }
+        //});
+        self.updateActiveChildren = function () { self.protected.activeChildren = children.filter(function (e) { return e.visible !== 'collapsed' }) };
+        self.protected.activeChildren = [];
         //self.addProperty('children', { get:true, 'default': children});
         //self.addProperty('child', { get: function () { if (children.length > 1) { throw "Element has multiple children" }; return children[0]; } });
         Object.defineProperty(self, 'child', {
@@ -310,7 +339,12 @@ var Layout;
 
         self.addProperty('display', {
             'default': 'visible', needsMeasure: true,
-            validValues: ['visible', 'hidden', 'collapsed']
+            validValues: ['visible', 'hidden', 'collapsed'],
+            changed: function () {
+                if (self.parent) {
+                    self.parent.updateActiveChildren();
+                }
+            }
         });
         self.addProperty('isHidden', {
             'default': false, changed: function (v) {
@@ -323,7 +357,19 @@ var Layout;
                     self.display = 'visible';
                 }
             }
-        })
+        });
+        self.addProperty('isCollapsed', {
+            'default': false, changed: function (v) {
+                if (v) {
+                    self.display = 'collapsed';
+                    return;
+                }
+                var display = Layout.peekPropertyValue(self, 'display');
+                if (display !== 'visible' && !v) {
+                    self.display = 'visible';
+                }
+            }
+        });
 
 
         self.addProperty('horizontalAlignment', {
@@ -379,6 +425,7 @@ var Layout;
         self.addCssProperty('borderStyle', false, 'solid', ['dotted', 'dashed', 'solid', 'double', 'groove', 'ridge', 'inset', 'outset']);
         self.addCssProperty('borderColor', false, 'black');
         self.addCssProperty('opacity', false);
+        self.addCssProperty('pointerEvents', false, 'auto', ['auto', 'none']);
         var zeroRadius = Object.freeze({ topLeft: 0, topRight: 0, bottomRight: 0, bottomLeft: 0 });
         self.addProperty('cornerRadius', {
             needsArrange: true,
@@ -595,7 +642,7 @@ var Layout;
                 showHtml(element.visualChildren[i]);
             }
         };
-
+        var lastRenderSize = {};
         //var lastPadding = { top: -1, right: -1, bottom: -1, left: -1 };// Illegal value to force padding being applied the first time
         self.render = function (htmlParent, offset) {
             if (self.display !== 'visible') {
@@ -628,6 +675,7 @@ var Layout;
                     self.html.style.position = 'absolute';
                     //self.html.style.pointerEvents = 'none';
                     self.html.layoutElement = self;
+                    lastRenderSize = {};
 
                     //// Removed since only changed values should be set 
                     //for (var name in cssValues) {
@@ -668,10 +716,23 @@ var Layout;
                     lastHtmlParent = htmlParent;
                     htmlParent.appendChild(html);
                 }
-                html.style.width = self.renderSize.width + 'px';
-                html.style.height = self.renderSize.height + 'px';
-                html.style.left = self.renderSize.x + 'px';
-                html.style.top = self.renderSize.y + 'px';
+                if (lastRenderSize.width !== self.renderSize.width) {
+                    html.style.width = self.renderSize.width + 'px';
+                }
+                if (lastRenderSize.height !== self.renderSize.height) {
+                    html.style.height = self.renderSize.height + 'px';
+                }
+                //if (lastRenderSize.x !== self.renderSize.x) {
+                //    html.style.left = self.renderSize.x + 'px';
+                //}
+                //if (lastRenderSize.y !== self.renderSize.y) {
+                //    html.style.top = self.renderSize.y + 'px';
+                //}
+                if(lastRenderSize.x !== self.renderSize.x ||
+                    lastRenderSize.y !== self.renderSize.y) {
+                    html.style.transform = 'translate(' + self.renderSize.x + 'px,' + self.renderSize.y + 'px)';
+                }
+                lastRenderSize = self.renderSize;
             }
 
             // We still carry out these steps even if we are collapsed since we have to make sure

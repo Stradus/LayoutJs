@@ -29,7 +29,7 @@ var Layout;
                     continue;// skip those special meaning fields
                 }
                 // detect bindings (bindings start iwth word 'bind' e.g. bindHorizontalAlignment
-                if (optionName.length > 4 && optionName.lastIndexOf('bind')===0) {
+                if (optionName.length > 4 && optionName.lastIndexOf('bind') === 0) {
                     var propertyName = optionName[4].toLowerCase() + optionName.slice(5);
                     Layout.dataBind(element, propertyName, definition[optionName]);
                 }
@@ -47,7 +47,7 @@ var Layout;
                 throw "Element can not be defined with both child and children property."
             }
 
-            var children = definition.children ||(definition.child? [definition.child]:undefined);
+            var children = definition.children || (definition.child ? [definition.child] : undefined);
             if (!children) {
                 return element; // No children so we are done
             }
@@ -65,8 +65,11 @@ var Layout;
         }
         return element;
     }
-    Layout.performance = {
-        checkValidPropertyValues: true
+    Layout.settings = {
+        inspect: true,
+        inspectFilter: function (event) {
+            return event.ctrlKey
+        }
     };
     var initializeThemes = function () {
         Layout.defineProperty(Layout, 'theme', {
@@ -196,6 +199,12 @@ var Layout;
             }
 
             if (target) {
+                if (Layout.settings.inspect && Layout.settings.inspectFilter(e)) {
+                    e.preventDefault();
+                    Layout.inspect(target);
+                    return false;
+                }
+                setPointerPositions(e, target);
                 propagateUp(target, 'isPointerDown', true);
                 lastPointerDownElement = target;
                 // Prevent selection unless element is selectable
@@ -216,6 +225,28 @@ var Layout;
                 lastPointerDownElement = undefined;
             }
         });
+        var setPointerPositions = function (event, element) {
+            if (element.hasOwnProperty('pointerPosition')) {
+                //var pos = { x: event.offsetX, y: event.offsetY };
+                var pos = { x: event.screenX, y: event.screenY };
+                Object.freeze(pos); //Freezing to prevent accidents
+                element.pointerPosition = pos;
+            }
+        }
+
+        hostHtmlElement.addEventListener('mousemove', function (e) {
+            if (lastPointerDownElement) {
+                //console.log("Moving in element");
+                setPointerPositions(e, lastPointerDownElement);
+            } else {
+                //console.log("Moving without element");
+            }
+            //var target = getLayoutElementParent(e.target);
+            //if (lastPointerDownElement) {
+            //    propagateUp(lastPointerDownElement, 'isPointerDown', false);
+            //    lastPointerDownElement = undefined;
+            //}
+        });
 
         hostHtmlElement.addEventListener('dragstart', function (e) {
             e.preventDefault();
@@ -226,5 +257,5 @@ var Layout;
         elementsWithEventHandlers.set(hostHtmlElement, true);
     };
 
-    
+
 })(Layout || (Layout = {}));

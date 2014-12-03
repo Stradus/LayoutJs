@@ -70,11 +70,17 @@ var LayoutThemes;
             hoistProperties: ['text', 'opacity', 'color']
         }
     };
+    var textStyle = {
+        targetType: 'text',
+        fontFamily: fontFamily, 
+        fontSize: fontSize,
+        color:'#afafaf'
+    }
 
     LayoutThemes.stradus = {
         name: 'stradus',
         styles: [
-            buttonStyle, fileStyle
+            buttonStyle, fileStyle, textStyle
         ]
     };
 })(LayoutThemes || (LayoutThemes = {}));

@@ -96,8 +96,8 @@ var Layout;
             }
             // To allow new scheduling
             requestAnimationFrameID = undefined;
-            console.log('Rendered in: ' + (window.performance.now() - start)
-                + '(' + (hasMeasured ? 'measured,' : '') + (hasArranged ? 'arranged,' : '') + (hasRendered ? 'rendered' : '') + ')');
+            //console.log('Rendered in: ' + (window.performance.now() - start)
+            //    + '(' + (hasMeasured ? 'measured,' : '') + (hasArranged ? 'arranged,' : '') + (hasRendered ? 'rendered' : '') + ')');
         };
         var requestAnimationFrameID = undefined;
         var requestAnimationFrame = function () {

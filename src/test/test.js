@@ -25,12 +25,24 @@ var LayoutTest;
             {
                 type: 'text',
                 dataSelector: 'sub',
-                bindText: {
-                    expression: function () {
-                        return (this.firstName || 'No first name') + ', ' + (this.lastName || 'No last name');
-                    },
-                    dependents: ['firstName', 'lastName']
-                }
+                bindText: //'{{this.firstName}}, {{this.lastName}}'
+                    {
+                        expression: function () {
+                            return (this.firstName || 'No first name') + ', ' + (this.lastName || 'No last name');
+                        },
+                        dependents: ['firstName', 'lastName']
+                    }
+            },
+            {
+                type: 'text',
+                dataSelector: 'sub',
+                bindText: //'First: {{this.firstName}}, Last: {{this.lastName}}'
+                    {
+                        expression: function () {
+                            return 'First: ' + (this.firstName || 'No first name') + ', Last: ' + (this.lastName || 'No last name');
+                        },
+                        dependents: ['firstName', 'lastName']
+                    }
             },
             {
                 type: 'button',
@@ -40,6 +52,19 @@ var LayoutTest;
             {
                 type: 'text',
                 bindText: 'smartOne'
+            },
+            { 
+                type:'position',
+                pointerEvents: 'none',
+                children:
+            [{
+                type: 'text',
+                text: 'Text with move behavior'
+            },
+            {
+                type: 'button',
+                text: 'Button with move behavior'
+            }]
             }
             ]
         };
@@ -130,7 +155,7 @@ var LayoutTest;
             sub: { subValue: 'Hello submodel' }
         };
         var smartValue = 'This should not show';
-        Object.defineProperty(data, 'smartOne', {configurable:true, get: function () { return smartValue; }, set: function (v) { smartValue = v; } })
+        Object.defineProperty(data, 'smartOne', { configurable: true, get: function () { return smartValue; }, set: function (v) { smartValue = v; } })
         o.data = data;
         data.thirdButtonText = 'Final text';
         data.textValue = 'Late binding';

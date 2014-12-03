@@ -13,7 +13,7 @@ var Layout;
         self.addAutoProperty('state', function (oldState) {
             var state = self.isDisabled?'disabled':( (self.isPointerDown & self.isPointerOver) ? 'buttonDown' :
                 (self.isPointerOver ? 'pointerOver' : 'default'));
-            console.log('State: ' + state);
+            //console.log('State: ' + state);
             self.applyStyle(state);
             return state;
         });

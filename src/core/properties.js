@@ -19,6 +19,19 @@ var Layout;
         }
         return objectProperties.get(name);
     }
+    Layout.getObjectPropertyNames = function (object) {
+        var objectProperties = propertyStore.get(object);
+        if (!objectProperties) {
+            return[];
+        }
+        var names = [];
+        objectProperties.forEach(function (p) {
+            names.push(p.name);
+        });
+        return names;
+    }
+
+
 
     var propertyStack = [];
     var logReadAccess = false;
@@ -73,7 +86,7 @@ var Layout;
             propertyChanged: calculateNewValue
         };
         if (useOld !== false && object.hasOwnProperty(name)) {
-            console.log('Wrapping existing property');
+            console.log('Wrapping existing property: ' + name);
             // It already exists so we have to wrap it
             var definition = Object.getOwnPropertyDescriptor(object, name);
             if (!definition.configurable) {
@@ -88,6 +101,34 @@ var Layout;
             property.currentValue = object[name];
         }
         var oldGetInprogress = false;
+        var getFunc;
+        // Two separate functions, so that we dont suffer the non-optimiztion of try finally
+        // when the code will never be used
+        if (property.originalGet) {
+           getFunc = function () {
+                if (logReadAccess) {
+                    propertyReadAccessed(property);
+                }
+                if (property.originalGet) {
+                    oldGetInprogress = true;
+                    try {
+                        property.object[property.name] = property.originalGet();
+                    }
+                    finally {
+                        oldGetInprogress = false;
+                    }
+                }
+                return property.currentValue;
+            }
+        } else {
+            getFunc = function () {
+                if (logReadAccess) {
+                    propertyReadAccessed(property);
+                }
+                return property.currentValue;
+            }
+        }
+
         Object.defineProperty(object, name, {
             configurable: true,
             set: function (newValue) {
@@ -124,27 +165,13 @@ var Layout;
                 if (property.needsRender) {
                     property.object.needsRender = true;
                 }
-               
+
                 //if (property.cascade) {
                 //    Layout.applyCascade(property)
                 //}
             },
-            get: function () {
-                if (logReadAccess) {
-                    propertyReadAccessed(property);
-                }
-                if (property.originalGet) {
-                    oldGetInprogress = true;
-                    try {
-                        property.object[property.name] = property.originalGet();
-                    }
-                    finally {
-                        oldGetInprogress = false;
-                    }
-                }
-                return property.currentValue;
-            },
-        })
+            get: getFunc
+        });
         addPropertyToStore(property);
         return property;
     }
@@ -215,10 +242,10 @@ var Layout;
         objectA[nameA] = objectB[nameB];
     };
 
-    Function.prototype.dependsOn = function (d) {
-        this.__layoutDependencies = d;
-        return this;
-    }
+    //Function.prototype.dependsOn = function (d) {
+    //    this.__layoutDependencies = d;
+    //    return this;
+    //}
 
     Layout.dataBind = function (object, name, expression, dependents) {
         var property = getOrCreateLayoutProperty(object, name);
@@ -280,7 +307,9 @@ var Layout;
         return property.currentValue;
     }
 
-    Layout.defineEventProperty = function (object, name, autoTrigger) {
+
+
+    Layout.defineEventProperty = function (object, name, autoTrigger, invert) {
         var property = Layout.defineProperty(object, name, {
             filter: function (v) {
                 if (typeof v !== 'array') {
@@ -298,11 +327,15 @@ var Layout;
         };
         var isFired = false;
         if (autoTrigger) {
+            if (typeof autoTrigger === 'string') {
+                autoTrigger = getPropertyFromStore(property.object, autoTrigger);
+            }
             autoTrigger.callbacks.add(function (v) {
-                if (v && !isFired) {
+                var value = invert?!v:v;                
+                if (value && !isFired) {
                     property.run();
                 }
-                if (!v) {
+                if (!value) {
                     isFired = false;
                 }
             });
