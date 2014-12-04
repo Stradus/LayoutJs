@@ -39,6 +39,7 @@ var Layout;
         self.createHtml = function () {
             if (!self.html) {
                 self.html = document.createElement('div');
+                self.htmlHost = self.html;
                 return true;
             }
         };

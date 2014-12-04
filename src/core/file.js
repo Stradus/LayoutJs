@@ -10,6 +10,7 @@ var Layout;
         self.createHtml = function () {
             if (!self.html) {
                 self.html = document.createElement('div');
+                self.htmlHost = self.html;
                 fileForm = document.createElement('form'); // Neede to be able to reset the files selected
                 // Since setting files on input element is not supported in IE
                 // Other way is by recreating input lement every time

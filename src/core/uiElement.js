@@ -622,6 +622,8 @@ var Layout;
         var lastBorder;
         var lastRadius;
         var lastWasVisible = true;
+        self._htmlAsChild = true;
+        self._forceGPU = false;
         var removeHtml = function (child) {
             if (child.html) {
                 child.html.parentElement.removeChild(child.html);
@@ -679,8 +681,13 @@ var Layout;
                 if (self.createHtml()) {
                     //self.html.style.display = 'block';
                     self.html.style.position = 'absolute';
+                    self.html.style.top = '0px';
+                    self.html.style.left = '0px';
                     //self.html.style.pointerEvents = 'none';
                     self.html.layoutElement = self;
+                    //if (self._forceGPU) {
+                    //    self.html.style.opacity = '0.99999';
+                    //}
                     lastRenderSize = {};
 
                     //// Removed since only changed values should be set 
@@ -736,7 +743,14 @@ var Layout;
                 //}
                 if(lastRenderSize.x !== self.renderSize.x ||
                     lastRenderSize.y !== self.renderSize.y) {
-                    html.style.transform = 'translate(' + self.renderSize.x + 'px,' + self.renderSize.y + 'px)';
+                    if (self._forceGPU) {
+                        // Webkit needed fro safari
+                        html.style.webkitTransform = 'translate3d(' + self.renderSize.x + 'px,' + self.renderSize.y + 'px, 0px)';
+                        html.style.transform = 'translate3d(' + self.renderSize.x + 'px,' + self.renderSize.y + 'px, 0px)';
+                    } else {
+                        html.style.webkitTransform = 'translate(' + self.renderSize.x + 'px,' + self.renderSize.y + 'px)';
+                        html.style.transform = 'translate(' + self.renderSize.x + 'px,' + self.renderSize.y + 'px)';
+                    }
                 }
                 lastRenderSize = self.renderSize;
             }
@@ -747,9 +761,17 @@ var Layout;
                 self.renderSelf(self.renderSize);
             }
 
-            for (var i = 0; i < children.length; i++) {
-                var child = children[i];
-                child.render(htmlParent, { x: self.renderSize.x + self.border.left, y: self.renderSize.y + self.border.top });
+            if (self._htmlAsChild) {
+                for (var i = 0; i < children.length; i++) {
+                    var child = children[i];
+                    //var parent = self.htmlHost || htmlParent;
+                    child.render(self.htmlHost, { x: 0, y: 0 });
+                }
+            } else {
+                for (var i = 0; i < children.length; i++) {
+                    var child = children[i];
+                    child.render(htmlParent, { x: self.renderSize.x + self.border.left, y: self.renderSize.y + self.border.top });
+                }
             }
             if (self.postRenderSelf) {
                 self.postRenderSelf(self.renderSize);

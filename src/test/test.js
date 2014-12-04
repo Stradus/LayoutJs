@@ -53,19 +53,25 @@ var LayoutTest;
                 type: 'text',
                 bindText: 'smartOne'
             },
-            { 
-                type:'position',
-                pointerEvents: 'none',
-                children:
-            [{
-                type: 'text',
-                text: 'Text with move behavior'
-            },
             {
                 type: 'button',
-                text: 'Button with move behavior'
-            }]
+                id: 'inspectButton',
+                text: 'Inspect Self',
+                bindClick: 'inspectSelf',
             }
+            //{ 
+            //    type:'position',
+            //    pointerEvents: 'none',
+            //    children:
+            //[{
+            //    type: 'text',
+            //    text: 'Text with move behavior'
+            //},
+            //{
+            //    type: 'button',
+            //    text: 'Button with move behavior'
+            //}]
+            //}
             ]
         };
 
@@ -152,7 +158,8 @@ var LayoutTest;
             secondButtonText: 'Data Bound Text for this Button',
             thirdButtonText: 'Should not be visible',
             clickHandler: function () { console.log('Clicked') },
-            sub: { subValue: 'Hello submodel' }
+            sub: { subValue: 'Hello submodel' },
+            inspectSelf : function(){Layout.inspect(o.findElementById('inspectButton'))}
         };
         var smartValue = 'This should not show';
         Object.defineProperty(data, 'smartOne', { configurable: true, get: function () { return smartValue; }, set: function (v) { smartValue = v; } })

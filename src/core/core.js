@@ -150,7 +150,12 @@ var Layout;
         return;
     };
 
+    //Layout._needWebkitTransform = false;
 
+    //var checkForTransform = function () {
+    //    var div = document.createElement('div');
+
+    //}
 
     var elementsWithEventHandlers = new WeakMap();
     Layout.initializeEventHandling = function (hostHtmlElement) {
