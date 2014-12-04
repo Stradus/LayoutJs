@@ -41,10 +41,10 @@ var Layout;
                 type: 'stack',
                 border: { left: 1 },
                 borderColor: 'gray',
-                padding:3,
+                padding: 3,
                 orientation: 'vertical',
                 children: []
-            }); 
+            });
             Layout.getObjectPropertyNames(element).sort().forEach(function (name) {
                 if (skipProperties.has(name)) {
                     return;
@@ -62,15 +62,49 @@ var Layout;
                 }
                 rightStack.children.push(value);
             });
-            var container = {                
+            var container = {
                 type: 'stack',
                 orientation: 'horizontal',
+                dataSelector: 'element',
                 border: { top: 1 },
                 borderColor: 'gray',
                 horizontalAlignment: 'left',
-                verticalAlignment: 'top', 
+                verticalAlignment: 'top',
                 //data: element,
                 children: [leftStack, rightStack]
+            }
+            var topBar = {
+                type: 'stack',
+                orientation: 'horizontal',
+                background: '#e6e6e6',
+                cornerRadius: { topLeft: 4, topRight: 4 },
+                children:
+                    [{
+                        type: 'text',
+                        padding: 3,
+                        dataSelector: 'element',
+                        horizontalAlignment: 'left',
+                        verticalAlignment: 'center',
+                        bindText: 'type',
+                        fontSize: '16px',
+                        selectable: false
+                    },
+                    {
+                        type: 'button',
+                        horzontalAlignment: 'left',
+                        verticalAlignment: 'center',
+                        fontSize: '16px',
+                        bindClick: 'seeParent'
+                    },
+                    {
+                        type: 'button',
+                        border: 0,
+                        background: undefined,
+                        text: 'X',
+                        fontSize: '16px',
+                        bindClick: 'close'
+                    }
+                    ]
             }
             var panel = {
                 type: 'stack',
@@ -83,24 +117,26 @@ var Layout;
                 verticalAlignment: 'top',
                 background: 'white',
                 children: [
-                    {
-                        type: 'text',
-                        padding: 3,
-                        //horizontalAlignment: 'left',
-                        background: '#e6e6e6',
-                        bindText: 'type',
-                        fontSize: '16px',
-                        cornerRadius: { topLeft: 4, topRight: 4 },
-                        selectable:false
-                    },
+                    topBar,
                     container
                 ]
-            }            
+            }
             parent.child = Layout.create(panel);
             Layout.moveBehavior(parent.child.child);
             parent.child.child.moveTarget = 'elementPanel';
+            var data = {
+                element: element,
+                close: function () {
+                    parent.removeAllChildren();
+                },
+                seeParent: function () {
+                    if (data.element.parent) {
+                        data.element = data.element.parent;
+                    }
+                }
+            };
 
-            parent.child.data = element;
+            parent.child.data = data;
         }
     };
 })(Layout || (Layout = {}));

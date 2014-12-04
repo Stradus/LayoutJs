@@ -155,7 +155,9 @@ var Layout;
             children.push(child);
             child.setParent(self);
             //Layout.applyCascade(child);
-            child.data = self.data;
+            //child.data = self.data;
+            var childDataProp = Layout.getProperty(child, 'data');
+            childDataProp.propertyChanged(childDataProp);
             self.needsMeasure = true;
             if (self.addParentSpecificProperties) {
                 self.addParentSpecificProperties(child);
@@ -282,34 +284,51 @@ var Layout;
         //    }
         //};
 
-        self.addProperty('dataSelector');//, {
-            //changed: dataSelection 
+        //self.addProperty('dataSelector');//, {
+        //    //changed: dataSelection 
+        ////});
+        //self.addProperty('data', {
+        //    cascade: true,
+        //    filter: function (v) {
+        //        if (self.dataSelector && v) {
+        //            if (!Layout.isPropertyDefined(v, self.dataSelector)) {
+        //                Layout.defineProperty(v, self.dataSelector, {
+        //                    changed: function () {
+        //                        self.data = self.parent.data;
+        //                    }
+        //                });
+        //            }
+        //            return v[self.dataSelector];
+        //        }
+        //        return v;
+        //    }
+        //    ,
+        //    changed: function (v) {
+        //        //dataSelection(Layout.peekPropertyValue(self, 'dataSelector'));
+        //        for (var i = 0; i < children.length; i++) {
+        //            children[i].data = v;
+        //        }
+        //    }
         //});
-        self.addProperty('data', {
-            cascade: true,
-            filter: function (v) {
-                if (self.dataSelector && v) {
-                    if (!Layout.isPropertyDefined(v, self.dataSelector)) {
-                        Layout.defineProperty(v, self.dataSelector, {
-                            changed: function () {
-                                self.data = self.parent.data;
-                            }
-                        });
-                    }
-                    return v[self.dataSelector];
-                }
-                return v;
-            }
-            ,
-            changed: function (v) {
-                //dataSelection(Layout.peekPropertyValue(self, 'dataSelector'));
-                for (var i = 0; i < children.length; i++) {
-                    children[i].data = v;
-                }
-            }
-        });
 
-        self.dataBind = function (elmentPropertyName, bindingExpression) {            
+        self.addProperty('dataSelector');
+        var updateData = function () {
+            if (parent) {
+                var dataSelector = self.dataSelector;
+                var parentData = parent.data;
+                if (dataSelector && parentData) {
+                    if (!Layout.isPropertyDefined(parentData, dataSelector)) {
+                        Layout.defineProperty(parentData, dataSelector);
+                    }
+                    return parentData[dataSelector];
+                }
+                return parentData;
+            }
+            return;
+        };
+        var dataProperty = self.addAutoProperty('data', updateData);
+
+        self.dataBind = function (elmentPropertyName, bindingExpression) {
             Layout.dataBind(self, elmentPropertyName, bindingExpression);
         }
 
@@ -741,7 +760,7 @@ var Layout;
                 //if (lastRenderSize.y !== self.renderSize.y) {
                 //    html.style.top = self.renderSize.y + 'px';
                 //}
-                if(lastRenderSize.x !== self.renderSize.x ||
+                if (lastRenderSize.x !== self.renderSize.x ||
                     lastRenderSize.y !== self.renderSize.y) {
                     if (self._forceGPU) {
                         // Webkit needed fro safari

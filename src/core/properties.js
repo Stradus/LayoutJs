@@ -38,7 +38,7 @@ var Layout;
     var propertyReadAccessed = function (readProperty) {
         var activeProperty = propertyStack[propertyStack.length - 1];
         readProperty.subscribers.add(activeProperty);
-        activeProperty.dependents.add(activeProperty);
+        activeProperty.dependents.add(readProperty);
     };
     var logWriteAccess = false;
     var propertyWriteAccess = function (property) {
@@ -178,12 +178,16 @@ var Layout;
 
     Layout.isPropertyDefined = function (object, name) {
         return getPropertyFromStore(object, name);
-    }
+    };
+
+    Layout.getProperty = function (object, name) {
+        return getPropertyFromStore(object, name);
+    };
 
     Layout.defineProperty = function (object, name, options) {
         var property = getOrCreateLayoutProperty(object, name, options ? options.useOld : undefined);
         if (!options) {
-            return;
+            return property;
         }
         if (options.hasOwnProperty('filter')) {
             property.filter = options.filter;
