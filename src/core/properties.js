@@ -270,7 +270,7 @@ var Layout;
         }
         else if (typeof expression === 'function') {
             property.expression = function () {
-                return expression.call(object.data);
+                return expression.call(object.data, object);
             };
         } else if (typeof expression === 'object') {
             expression.dependents = expression.dependents || [];
@@ -293,7 +293,7 @@ var Layout;
                         });
                     }
                 }
-                return expression.expression.call(data || {});
+                return expression.expression.call(data || {}, object);
             }
         } else {
             throw "Inavlid expression type: " + (typeof expression);

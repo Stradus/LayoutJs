@@ -97,7 +97,7 @@ var Layout;
                 var dimensions = Layout.getOrCalculateFontDimensions(font);
                 lastHeight = dimensions.height;
                 lastFontOffset = 0;// =dimensions.height - dimensions.ascent;
-                console.log('Text width calculated');
+                //console.log('Text width calculated');
             }
             if (lastWidth === undefined || lastText !== self.text || lastFont !== font) {
                 lastText = self.text;
@@ -106,7 +106,7 @@ var Layout;
                 var textMetrics = measureCanvasContext.measureText(measuredText);
                 lastWidth = textMetrics.width;
                 lastFont = font;
-                console.log('Text height calculated');
+                //console.log('Text height calculated');
                 //if(lastHeight)
             }
             return { width: lastWidth + self.padding.left + self.padding.right, height: lastHeight + self.padding.top + self.padding.bottom };
