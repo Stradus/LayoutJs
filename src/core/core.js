@@ -197,10 +197,13 @@ var Layout;
         };
         hostHtmlElement.addEventListener('mouseover', mouseOverFunc);
         var lastPointerDownElement = undefined;
-        hostHtmlElement.addEventListener('mousedown', function (e) {
+        var pointerDownFunc = function (e) {
             var target = getLayoutElementParent(e.target);
             if (lastPointerDownElement) {
                 propagateUp(target, 'isPointerDown', false);
+                if (e.touches) {
+                    propagateUp(target, 'isPointerOver', false);
+                }
                 lastPointerDownElement = undefined;
             }
 
@@ -211,6 +214,9 @@ var Layout;
                     return false;
                 }
                 setPointerPositions(e, target);
+                if (e.touches) {
+                    propagateUp(target, 'isPointerOver', true);
+                }
                 propagateUp(target, 'isPointerDown', true);
                 lastPointerDownElement = target;
                 // Prevent selection unless element is selectable
@@ -218,29 +224,44 @@ var Layout;
                     e.preventDefault();
                 }
             }
-        });
+        };
+        hostHtmlElement.addEventListener('mousedown', pointerDownFunc);
+
+        hostHtmlElement.addEventListener('touchstart', pointerDownFunc);
 
         // Needed when host element is not root in the document
         hostHtmlElement.addEventListener('mouseleave', mouseOverFunc);
 
-
-        hostHtmlElement.addEventListener('mouseup', function (e) {
+        var pointerUpFunc = function (e) {
             var target = getLayoutElementParent(e.target);
             if (lastPointerDownElement) {
                 propagateUp(lastPointerDownElement, 'isPointerDown', false);
+                if (e.touches) {
+                    propagateUp(target, 'isPointerOver', false);
+                }
                 lastPointerDownElement = undefined;
             }
-        });
+            e.preventDefault();
+        };
+        hostHtmlElement.addEventListener('mouseup', pointerUpFunc);
+        hostHtmlElement.addEventListener('touchend', pointerUpFunc);
+
+
         var setPointerPositions = function (event, element) {
             if (element.hasOwnProperty('pointerPosition')) {
                 //var pos = { x: event.offsetX, y: event.offsetY };
-                var pos = { x: event.screenX, y: event.screenY };
+                if (event.touches) {
+                    var pos = { x: event.touches[0].screenX, y: event.touches[0].screenY };
+                }
+                else {
+                    var pos = { x: event.screenX, y: event.screenY };
+                }
                 Object.freeze(pos); //Freezing to prevent accidents
                 element.pointerPosition = pos;
             }
         }
 
-        hostHtmlElement.addEventListener('mousemove', function (e) {
+        var pointerMoveFunc = function (e) {
             if (lastPointerDownElement) {
                 //console.log("Moving in element");
                 setPointerPositions(e, lastPointerDownElement);
@@ -252,12 +273,16 @@ var Layout;
             //    propagateUp(lastPointerDownElement, 'isPointerDown', false);
             //    lastPointerDownElement = undefined;
             //}
-        });
+            e.preventDefault();
+        };
+        hostHtmlElement.addEventListener('mousemove', pointerMoveFunc);
+        hostHtmlElement.addEventListener('touchmove', pointerMoveFunc);
 
         hostHtmlElement.addEventListener('dragstart', function (e) {
             e.preventDefault();
             return false;
         });
+
 
         // Only add now, since an error might have occured earlier
         elementsWithEventHandlers.set(hostHtmlElement, true);
