@@ -19,6 +19,10 @@ var LayoutTest;
             },
             {
                 type: 'text',
+                bindText:{expression:function(){return this.sub? this.sub.subValue2:'Undefined'}, dependents:['sub.subValue2']}
+            },
+            {
+                type: 'text',
                 dataSelector: 'sub',
                 bindText: function () { return staticText }
             },
@@ -171,6 +175,7 @@ var LayoutTest;
             data.sub.lastName = 'Doe';
         }
         data.smartOne = "Correct";
+        data.sub.subValue2 = "Here is the final value";
         return o;
 
         //var definition = {

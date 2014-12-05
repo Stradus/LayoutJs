@@ -275,9 +275,18 @@ var Layout;
         } else if (typeof expression === 'object') {
             expression.dependents = expression.dependents || [];
             var dataDependencies = [];
+            var deps = {};
             for (var i = 0; i < expression.dependents.length; i++) {
                 var dependent = expression.dependents[i];
                 if (typeof dependent === 'string') {
+                    var parts = dependent.split('.');
+                    var depsPrev = deps;
+                    for (var part = 0; part < parts.length - 1; part++) {
+                        depsPrev[parts[part]] = depsPrev[parts[part]] || {};
+                        depsPrev = depsPrev[parts[part]];
+                    }
+                    //dataDependencies.push(parts[i]);
+                    depsPrev[parts[part]] = depsPrev[parts[part]] || undefined;
                     dataDependencies.push(dependent);
                 } else {
                     getOrCreateLayoutProperty(dependent.object, dependent.name);
@@ -286,12 +295,14 @@ var Layout;
             property.expression = function () {
                 var data = object.data;
                 if (data) {
-                    if (lastData !== data) {
-                        lastData = data;
-                        dataDependencies.forEach(function (name) {
-                            getOrCreateLayoutProperty(data, name);
-                        });
-                    }
+                    //if (lastData !== data) {
+                    //    lastData = data;
+                    //    dataDependencies.forEach(function (name) {
+                    //        getOrCreateLayoutProperty(data, name);
+                    //    });
+                    //}
+                    // NON optimized nonsense
+                    checkForProperties(data, deps);
                 }
                 return expression.expression.call(data || {}, object);
             }
@@ -302,6 +313,15 @@ var Layout;
         //object[name] = property.expression();
         calculateNewValue(property);
     };
+
+    var checkForProperties = function (object, tree) {
+        for (var name in tree) {
+            getOrCreateLayoutProperty(object, name);
+            if (tree[name] && object[name]) {
+                checkForProperties(object[name], tree[name]);
+            }
+        }
+    }
 
     Layout.peekPropertyValue = function (object, name) {
         var property = getPropertyFromStore(object, name);
