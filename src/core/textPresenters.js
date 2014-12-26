@@ -3,7 +3,7 @@ var Layout;
 (function (Layout) {
     var fontHeightBlock, fontHeightDiv, fontHeightLastFont;//, fontHeightHasDefaultText;
     var fontHeightCache = {};
-    Layout.calculateFontDimensions = function (font, text) {
+    Layout.calculateFontDimensions = function (font, text, allowHTML) {
         // Modified from: http://stackoverflow.com/questions/1134586/how-can-you-find-the-height-of-text-on-an-html-canvas
         var start = window.performance.now();
         if (!fontHeightDiv) {// Cache elements, no need to recreate them everytime
@@ -22,11 +22,17 @@ var Layout;
             //fontHeightDiv.appendChild(fontHeightText);
             //fontHeightDiv.appendChild(fontHeightBlock);
             document.body.appendChild(fontHeightDiv);
-        } else {
-            fontHeightDiv.style.display = 'block';
         }
+        //else {
+            fontHeightDiv.style.display = 'inline';
+        //    fontHeightDiv.style.display = 'block';
+        //}
         if (text !== undefined) {
-            fontHeightDiv.textContent = text;
+            if (allowHTML) {
+                fontHeightDiv.innerHTML = text;
+            } else {
+                fontHeightDiv.textContent = text;
+            }
             //fontHeightHasDefaultText = false;
         }
         //else {
@@ -49,7 +55,7 @@ var Layout;
             //console.log(fontHeightText.offsetTop + ' - ' + fontHeightBlock.offsetTop);
             //result.height = fontHeightBlock.offsetTop - fontHeightText.offsetTop;
             result.height = fontHeightDiv.offsetHeight;
-
+            result.width = fontHeightDiv.offsetWidth;
 
             //result.height = fontHeightBlock.offsetTop - fontHeightText.offsetTop;
 
@@ -75,39 +81,50 @@ var Layout;
     Layout.text = function (inheritor) {
         var self = Layout.uiElement(inheritor || this, 0);
         self.type = 'text';
-        self.addProperty('text', { needsMeasure: true, get: true, set: true, 'default': '' });
+        self.addProperty('text', { needsMeasure: true, 'default': '' });
+        self.addProperty('allowHTML', { needsMeasure: true, 'default': false });
         self.addCssProperty('background', false, undefined);
         self.addCssProperty('color', false, undefined);
         self.addCssProperty('fontSize', true, '12px');
         self.addCssProperty('fontFamily', true, 'sans-serif');
-        self.addProperty('selectable', {needsRender:true, get: true, set: true, 'default': true });
+        self.addProperty('selectable', { needsRender: true, 'default': true });
         self.addProperty('horizontalContentAlignment', {
-            needsRender: true, get: true, set: true, 'default': 'left',
+            needsRender: true, 'default': 'left',
             validValues: ['left', 'center', 'right', 'stretch']
         });
         self.addProperty('verticalContentAlignment', {
-            needsRender: true, get: true, set: true, 'default': 'top',
+            needsRender: true, 'default': 'top',
             validValues: ['top', 'center', 'bottom', 'stretch']
         });
 
-        var lastText, lastFont, lastWidth, lastHeight, lastLineHeight, lastHorizontalContentAlignment, lastVerticalContentAlignment, lastPadding, lastFontOffset;
+        var lastAllowHTML, lastText, lastFont, lastWidth, lastHeight, lastLineHeight, lastHorizontalContentAlignment, lastVerticalContentAlignment, lastPadding, lastFontOffset;
         self.measureSelf = function (availableSize) {
             var font = self.fontSize + ' ' + self.fontFamily;
-            if (lastFont !== font) {
-                var dimensions = Layout.getOrCalculateFontDimensions(font);
-                lastHeight = dimensions.height;
-                lastFontOffset = 0;// =dimensions.height - dimensions.ascent;
-                //console.log('Text width calculated');
-            }
-            if (lastWidth === undefined || lastText !== self.text || lastFont !== font) {
-                lastText = self.text;
-                measureCanvasContext.font = font;
-                var measuredText = lastText ? lastText : '';// Otherwise we for example measure the length of the word undefined
-                var textMetrics = measureCanvasContext.measureText(measuredText);
-                lastWidth = textMetrics.width;
-                lastFont = font;
-                //console.log('Text height calculated');
-                //if(lastHeight)
+            if (self.allowHTML) {
+                if (lastAllowHTML !== self.allowHTML || lastText !== self.text || lastFont !== font) {
+                    var lastText = self.text;
+                    lastFont = font;
+                    var sizes = Layout.calculateFontDimensions(font, lastText, true);
+                    lastWidth = sizes.width;
+                    lastHeight = sizes.height;
+                }
+            } else {
+                if (lastFont !== font) {
+                    var dimensions = Layout.getOrCalculateFontDimensions(font);
+                    lastHeight = dimensions.height;
+                    lastFontOffset = 0;// =dimensions.height - dimensions.ascent;
+                    //console.log('Text width calculated');
+                }
+                if (lastWidth === undefined || lastText !== self.text || lastFont !== font) {
+                    lastText = self.text;
+                    measureCanvasContext.font = font;
+                    var measuredText = lastText ? lastText : '';// Otherwise we for example measure the length of the word undefined
+                    var textMetrics = measureCanvasContext.measureText(measuredText);
+                    lastWidth = textMetrics.width;
+                    lastFont = font;
+                    //console.log('Text height calculated');
+                    //if(lastHeight)
+                }
             }
             return { width: lastWidth + self.padding.left + self.padding.right, height: lastHeight + self.padding.top + self.padding.bottom };
         };
@@ -136,10 +153,16 @@ var Layout;
         var lastRenderText;
         var lastRenderOffsetX, lastRenderOffsetY;
         var lastRenderSelectable;
+        var lastRenderAllowHTML;
         self.renderSelf = function (renderSize) {
-            if (lastRenderText !== self.text) {
-                textSpan.textContent = self.text;
+            if (lastRenderText !== self.text || lastRenderAllowHTML !== self.allowHTML) {
+                if (self.allowHTML) {
+                    textSpan.innerHTML = self.text;
+                } else {
+                    textSpan.textContent = self.text;
+                }
                 lastRenderText = self.text;
+                lastRenderAllowHTML = self.allowHTML;
             }
 
             //// Now handles in mouse down event
@@ -147,24 +170,24 @@ var Layout;
             if (lastRenderSelectable !== self.selectable) {
                 lastRenderSelectable = self.selectable;
                 if (!lastRenderSelectable) {
-            //        self.html.style.userSelect = 'none';
-            //        self.html.style.mozUserSelect = 'none';
-            //        self.html.style.webkitUserSelect = 'none';
-            //        self.html.style.msUserSelect = 'none';
-            //        textSpan.style.userSelect = 'none';
-            //        textSpan.style.mozUserSelect = 'none';
-            //        textSpan.style.webkitUserSelect = 'none';
-            //        textSpan.style.msUserSelect = 'none';
+                    //        self.html.style.userSelect = 'none';
+                    //        self.html.style.mozUserSelect = 'none';
+                    //        self.html.style.webkitUserSelect = 'none';
+                    //        self.html.style.msUserSelect = 'none';
+                    //        textSpan.style.userSelect = 'none';
+                    //        textSpan.style.mozUserSelect = 'none';
+                    //        textSpan.style.webkitUserSelect = 'none';
+                    //        textSpan.style.msUserSelect = 'none';
                     textSpan.style.cursor = 'default';
                 } else {
-            //        self.html.style.userSelect = 'text';
-            //        self.html.style.mozUserSelect = 'text';
-            //        self.html.style.webkitUserSelect = 'text';
-            //        self.html.style.msUserSelect = 'text';
-            //        textSpan.style.userSelect = 'text';
-            //        textSpan.style.mozUserSelect = 'text';
-            //        textSpan.style.webkitUserSelect = 'text';
-            //        textSpan.style.msUserSelect = 'text';
+                    //        self.html.style.userSelect = 'text';
+                    //        self.html.style.mozUserSelect = 'text';
+                    //        self.html.style.webkitUserSelect = 'text';
+                    //        self.html.style.msUserSelect = 'text';
+                    //        textSpan.style.userSelect = 'text';
+                    //        textSpan.style.mozUserSelect = 'text';
+                    //        textSpan.style.webkitUserSelect = 'text';
+                    //        textSpan.style.msUserSelect = 'text';
                     textSpan.style.cursor = undefined;
                 }
             }

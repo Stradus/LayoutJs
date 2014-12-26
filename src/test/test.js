@@ -2,6 +2,20 @@
 var LayoutTest;
 (function (LayoutTest) {
     LayoutTest.test = function () {
+        var listContent = [{ greeting: 'Good morning' }, { greeting: 'Good aftenoon' }, { greeting: 'Good night' }];
+        var listTest = {
+            type: 'list',
+            items: listContent,
+            itemLayout: {
+                type: 'text',
+                bindText: 'greeting'
+            }
+        };
+
+
+
+
+
         var staticText = 'Static Text';
         var dataBinding = {
             type: 'stack',
@@ -138,19 +152,42 @@ var LayoutTest;
 
             ]
         };
+        var unsafeText = {
+            type: 'stack',
+            orientation: 'vertical',
+            horizontalAlignment: 'left',
+            children: [
+            {
+                type: 'text',
+                text: 'Safe <a>Hello</a>',
+                background: 'green',
+                allowHTML: false,
+                horizontalAlignment: 'left'
+            },
+            {
+                type: 'text',
+                text: 'Unsafe <a href="http://www.google.com">Hello</a>',
+                background: 'red',
+                allowHTML: true,
+                horizontalAlignment: 'left'
+            }]
+        };
         var definition = {
             type: 'host',
             children: [{
                 type: 'contentHost',
-                horizontalAlignment: 'stretch',
-                verticalAlignment: 'stretch',
+                horizontalAlignment: 'center',
+                verticalAlignment: 'center',
                 children: [{
                     type: 'stack',
                     horzontalAlignment: 'center',
                     verticalAlignment: 'center',
                     orientation: 'horizontal',
                     children: [
-                        buttonStack, dataBinding
+                        //buttonStack,
+                        //dataBinding,
+                        //unsafeText,
+                        listTest
                     ]
                 }
                 ]
@@ -158,24 +195,25 @@ var LayoutTest;
         };
 
         var o = Layout.create(definition);
-        var data = {
-            secondButtonText: 'Data Bound Text for this Button',
-            thirdButtonText: 'Should not be visible',
-            clickHandler: function () { console.log('Clicked') },
-            sub: { subValue: 'Hello submodel' },
-            inspectSelf : function(){Layout.inspect(o.findElementById('inspectButton'))}
-        };
-        var smartValue = 'This should not show';
-        Object.defineProperty(data, 'smartOne', { configurable: true, get: function () { return smartValue; }, set: function (v) { smartValue = v; } })
-        o.data = data;
-        data.thirdButtonText = 'Final text';
-        data.textValue = 'Late binding';
-        data.updateDataHandler = function () {
-            data.sub.firstName = 'John';
-            data.sub.lastName = 'Doe';
-        }
-        data.smartOne = "Correct";
-        data.sub.subValue2 = "Here is the final value";
+
+        //var data = {
+        //    secondButtonText: 'Data Bound Text for this Button',
+        //    thirdButtonText: 'Should not be visible',
+        //    clickHandler: function () { console.log('Clicked') },
+        //    sub: { subValue: 'Hello submodel' },
+        //    inspectSelf : function(){Layout.inspect(o.findElementById('inspectButton'))}
+        //};
+        //var smartValue = 'This should not show';
+        //Object.defineProperty(data, 'smartOne', { configurable: true, get: function () { return smartValue; }, set: function (v) { smartValue = v; } })
+        //o.data = data;
+        //data.thirdButtonText = 'Final text';
+        //data.textValue = 'Late binding';
+        //data.updateDataHandler = function () {
+        //    data.sub.firstName = 'John';
+        //    data.sub.lastName = 'Doe';
+        //}
+        //data.smartOne = "Correct";
+        //data.sub.subValue2 = "Here is the final value";
         return o;
 
         //var definition = {
