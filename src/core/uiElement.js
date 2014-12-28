@@ -445,6 +445,7 @@ var Layout;
         self.addCssProperty('borderColor', false, 'black');
         self.addCssProperty('opacity', false);
         self.addCssProperty('pointerEvents', false, 'auto', ['auto', 'none']);
+        self.addCssProperty('overflow', false, 'visible', ['hidden', 'visible']);
         var zeroRadius = Object.freeze({ topLeft: 0, topRight: 0, bottomRight: 0, bottomLeft: 0 });
         self.addProperty('cornerRadius', {
             needsArrange: true,
