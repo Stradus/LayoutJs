@@ -102,7 +102,8 @@ var Layout;
                         x: self.padding.left,
                         y: offset + self.padding.top,
                         width: Math.max(finalSize.width - self.padding.left - self.padding.right, child.desiredSize.width),
-                        height: child.desiredSize.height
+                        //height: child.desiredSize.height
+                        height: Math.min( child.desiredSize.height, finalSize.height - self.padding.top - offset - self.padding.bottom)
                     });
                     if (collapseRadius && prevChild) {
                         if(prevChild.margin.bottom === 0 && child.margin.top ===0){
@@ -136,7 +137,8 @@ var Layout;
                     child.arrange({
                         x: offset + self.padding.left,
                         y: self.padding.top,
-                        width: child.desiredSize.width,
+                        //width: child.desiredSize.width,
+                        width: Math.min(child.desiredSize.width, finalSize.width - self.padding.left - offset - self.padding.right),
                         height: Math.max(finalSize.height - self.padding.top - self.padding.bottom, child.desiredSize.height)
                     });
                     if (collapseRadius && prevChild) {

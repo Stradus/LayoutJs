@@ -25,7 +25,7 @@ var Layout;
             for (var optionName in definition) {
                 if (optionName === 'type' || optionName === 'children' || optionName === 'child'
                     || optionName === 'hoistProperties' ||
-                    optionName === 'isContentHost') {
+                    optionName === 'isContentHost' || optionName === 'behaviors') {
                     continue;// skip those special meaning fields
                 }
                 // detect bindings (bindings start iwth word 'bind' e.g. bindHorizontalAlignment
@@ -41,6 +41,12 @@ var Layout;
                 definition.hoistProperties.forEach(function (name) {
                     Layout.connectProperties(element, name, templateHost, name, true);
                 });
+            }
+            if (definition.hasOwnProperty('behaviors') ){
+                var behaviors = definition.behaviors;
+                for(var i = 0;i<behaviors.length;i++){
+                    Layout[behaviors[i] + 'Behavior'](element);
+                }                
             }
             if (definition.hasOwnProperty('child') &&
                 definition.hasOwnProperty('children')) {
